@@ -8,3 +8,5 @@ node_modules/
 worker/package-lock.json
 badge-preview.html
 PR-DRAFTS.md
+
+renderer-preview.html

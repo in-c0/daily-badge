@@ -1,4 +1,4 @@
-import { makeBadge } from "badge-maker";
+import { renderBadge } from "./badge.js";
 import defaultPack from "./packs/default.json";
 import devHumor from "./packs/dev-humor.json";
 import techFacts from "./packs/tech-facts.json";
@@ -133,9 +133,9 @@ export default {
     if (url.pathname === "/badge.svg" || url.pathname === "/") {
       let svg;
       try {
-        svg = makeBadge({ label, message, color, style });
+        svg = renderBadge({ label, message, color, style });
       } catch {
-        svg = makeBadge({
+        svg = renderBadge({
           label: DEFAULT_LABEL,
           message,
           color: DEFAULT_COLOR,
