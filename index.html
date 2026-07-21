@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Daily Badge — Customizer</title>
+<style>
+  :root {
+    --bg: #fff5f9;
+    --card: #ffffff;
+    --ink: #2b2130;
+    --muted: #8a7d8f;
+    --accent: #ff4d97;
+    --accent-ink: #fff;
+    --border: #f0d9e6;
+    --code-bg: #2b2130;
+    --code-ink: #ffd9ec;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17121c;
+      --card: #211a28;
+      --ink: #f4ecf5;
+      --muted: #a394ad;
+      --accent: #ff5fa2;
+      --accent-ink: #1a1020;
+      --border: #362b40;
+      --code-bg: #0f0b13;
+      --code-ink: #ffd9ec;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; }
+  header { text-align: center; margin-bottom: 28px; }
+  h1 { font-size: 2rem; margin: 0 0 6px; }
+  h1 .emoji { -webkit-text-fill-color: initial; }
+  .tag { color: var(--muted); margin: 0; }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.05);
+  }
+  .preview {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 92px; margin-bottom: 8px;
+    background: repeating-conic-gradient(rgba(128,128,128,.06) 0% 25%, transparent 0% 50%) 50% / 22px 22px;
+    border-radius: 12px;
+  }
+  .preview img { max-width: 100%; height: auto; }
+  .msg-note { text-align: center; color: var(--muted); font-size: .85rem; margin: 0 0 22px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
+  label { display: block; font-weight: 600; font-size: .85rem; margin-bottom: 6px; }
+  select, input[type=text] {
+    width: 100%; padding: 10px 12px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--ink);
+    font-size: .95rem;
+  }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+  .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+  .swatch[aria-pressed=true] { border-color: var(--ink); }
+  .snippet-head { display: flex; align-items: center; justify-content: space-between; margin: 26px 0 8px; }
+  .snippet-head h2 { font-size: 1rem; margin: 0; }
+  button.copy {
+    background: var(--accent); color: var(--accent-ink); border: 0;
+    padding: 8px 16px; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: .85rem;
+  }
+  button.copy:active { transform: translateY(1px); }
+  pre {
+    background: var(--code-bg); color: var(--code-ink); padding: 14px 16px;
+    border-radius: 12px; overflow-x: auto; margin: 0; font-size: .82rem;
+  }
+  .hint { color: var(--muted); font-size: .8rem; margin-top: 10px; }
+  footer { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 34px; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1><span class="emoji">🌟</span> Daily Badge</h1>
+    <p class="tag">A new message on your GitHub profile every day — in your timezone.</p>
+  </header>
+
+  <div class="card">
+    <div class="preview"><img id="preview" alt="badge preview" /></div>
+    <p class="msg-note" id="msgNote">Today’s message…</p>
+
+    <div class="grid">
+      <div>
+        <label for="tz">Timezone</label>
+        <select id="tz"></select>
+      </div>
+      <div>
+        <label for="pack">Message pack</label>
+        <select id="pack">
+          <option value="default">default — on-this-day fun</option>
+          <option value="dev-humor">dev-humor — developer comedy 🐛</option>
+          <option value="tech-facts">tech-facts — computing trivia 💡</option>
+        </select>
+      </div>
+      <div>
+        <label for="style">Style</label>
+        <select id="style">
+          <option>for-the-badge</option>
+          <option>flat</option>
+          <option>flat-square</option>
+          <option>plastic</option>
+          <option>social</option>
+        </select>
+      </div>
+      <div>
+        <label for="color">Color</label>
+        <input type="text" id="color" value="pink" />
+        <div class="swatches" id="swatches"></div>
+      </div>
+    </div>
+
+    <div class="snippet-head">
+      <h2>Paste this into your profile README</h2>
+      <button class="copy" id="copy">Copy</button>
+    </div>
+    <pre><code id="snippet"></code></pre>
+    <p class="hint" id="hostHint"></p>
+  </div>
+
+  <footer>
+    Made with 💖 · <a href="https://github.com/in-c0/daily-badge">source on GitHub</a>
+  </footer>
+</div>
+
+<script>
+// The deployed Worker host. Swapped to the real workers.dev URL at launch.
+const WORKER_HOST = "https://daily-badge.YOUR-SUBDOMAIN.workers.dev";
+const LABEL = "Today is ...";
+const FALLBACK = "You're amazing!";
+const DAY = 86400000;
+
+const TIMEZONES = [
+  "UTC","Australia/Sydney","Australia/Melbourne","Pacific/Auckland",
+  "Asia/Seoul","Asia/Tokyo","Asia/Shanghai","Asia/Singapore","Asia/Kolkata","Asia/Dubai",
+  "Europe/London","Europe/Paris","Europe/Berlin","Europe/Madrid","Europe/Moscow",
+  "America/New_York","America/Chicago","America/Denver","America/Los_Angeles","America/Sao_Paulo",
+  "Africa/Johannesburg","Africa/Cairo","Africa/Lagos"
+];
+const COLORS = ["pink","hotpink","blueviolet","orange","green","blue","red","gold","teal"];
+
+const packs = {};
+async function loadPacks() {
+  const names = ["default","dev-humor","tech-facts"];
+  await Promise.all(names.map(async n => {
+    const res = await fetch(`./worker/src/packs/${n}.json`);
+    packs[n] = await res.json();
+  }));
+}
+
+function todayKey(tz) {
+  try { return new Intl.DateTimeFormat("en-US",{timeZone:tz,month:"long",day:"numeric"}).format(new Date()); }
+  catch { return new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"long",day:"numeric"}).format(new Date()); }
+}
+function dayOfYear(tz) {
+  let iso;
+  try { iso = new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()); }
+  catch { iso = new Intl.DateTimeFormat("en-CA",{timeZone:"UTC",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()); }
+  const [y,m,d] = iso.split("-").map(Number);
+  return Math.floor((Date.UTC(y,m-1,d) - Date.UTC(y,0,0)) / DAY);
+}
+function messageFor(pack, tz) {
+  const p = packs[pack] || packs.default;
+  if (!p) return FALLBACK;
+  if (Array.isArray(p)) return p[(dayOfYear(tz)-1) % p.length];
+  return p[todayKey(tz)] || FALLBACK;
+}
+
+// Shields static-badge escaping: -->--, _-->__, then URL-encode.
+function esc(s){ return encodeURIComponent(String(s).replace(/-/g,"--").replace(/_/g,"__")); }
+
+const $ = id => document.getElementById(id);
+
+function render() {
+  const tz = $("tz").value, pack = $("pack").value, style = $("style").value, color = $("color").value || "pink";
+  const message = messageFor(pack, tz);
+
+  // Live preview via shields static badge (works before the Worker is deployed).
+  $("preview").src = `https://img.shields.io/badge/${esc(LABEL)}-${esc(message)}-${esc(color)}?style=${encodeURIComponent(style)}`;
+  $("msgNote").textContent = `Today (${todayKey(tz)}): “${message}”`;
+
+  // Copy snippet points at the dynamic Worker endpoint.
+  const q = `tz=${encodeURIComponent(tz)}&pack=${encodeURIComponent(pack)}&color=${encodeURIComponent(color)}&style=${encodeURIComponent(style)}`;
+  $("snippet").textContent = `![Daily Badge](${WORKER_HOST}/badge.svg?${q})`;
+  $("hostHint").innerHTML = WORKER_HOST.includes("YOUR-SUBDOMAIN")
+    ? "⏳ The hosted endpoint isn’t live yet — the preview above is real, and this snippet will work the moment the Worker is deployed."
+    : "This badge updates automatically every day at your local midnight.";
+}
+
+function init() {
+  // Timezone dropdown, defaulting to the visitor's own tz.
+  let mine = "UTC";
+  try { mine = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch {}
+  const list = TIMEZONES.includes(mine) ? TIMEZONES : [mine, ...TIMEZONES];
+  $("tz").innerHTML = list.map(t => `<option${t===mine?" selected":""}>${t}</option>`).join("");
+
+  // Color swatches.
+  $("swatches").innerHTML = COLORS.map(c =>
+    `<span class="swatch" data-c="${c}" style="background:${c}" role="button" tabindex="0" aria-label="${c}" aria-pressed="${c==='pink'}"></span>`
+  ).join("");
+  $("swatches").addEventListener("click", e => {
+    const c = e.target.getAttribute("data-c"); if (!c) return;
+    $("color").value = c;
+    document.querySelectorAll(".swatch").forEach(s => s.setAttribute("aria-pressed", s.getAttribute("data-c")===c));
+    render();
+  });
+
+  ["tz","pack","style","color"].forEach(id => $(id).addEventListener("input", render));
+  $("copy").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText($("snippet").textContent);
+      const b = $("copy"); b.textContent = "Copied!"; setTimeout(() => b.textContent = "Copy", 1400);
+    } catch {}
+  });
+
+  render();
+}
+
+loadPacks().then(init).catch(() => { $("msgNote").textContent = "Could not load message packs."; });
+</script>
+</body>
+</html>

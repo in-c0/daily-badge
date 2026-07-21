@@ -33,6 +33,8 @@ Change when your message flips by editing `timezone.txt` with any [IANA timezone
 
 ## 🚀 Zero-setup hosted version (no fork)
 
+**🎨 [Open the Customizer →](https://in-c0.github.io/daily-badge/)** — pick your timezone, pack, style, and color with a live preview, then copy the snippet.
+
 There's also a [Cloudflare Worker](worker/) that serves the badge from a single URL — **no fork, no Actions, no per-user setup.** Just paste one line and pick your options:
 
 ```markdown
