@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/in-c0/daily-badge/actions/workflows/tests.yml/badge.svg)](https://github.com/in-c0/daily-badge/actions/workflows/tests.yml)
 [![Daily Update](https://github.com/in-c0/daily-badge/actions/workflows/daily-badge.yml/badge.svg)](https://github.com/in-c0/daily-badge/actions/workflows/daily-badge.yml)
+[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Install-007ACC?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=in-c0.daily-badge)
 
 Get a cute, quirky, uplifting message on your GitHub profile — refreshed daily ✨
 
@@ -54,6 +55,18 @@ There's also a [Cloudflare Worker](worker/) that serves the badge from a single 
 - **default** — a curated "on this day" message for all 366 days
 - **dev-humor** — a rotating dose of developer comedy 🐛
 - **tech-facts** — a daily piece of computing trivia 💡
+
+---
+
+## 🧩 In your editor (VS Code)
+
+Prefer it where you actually work? Install the **[Daily Badge VS Code extension](https://marketplace.visualstudio.com/items?itemName=in-c0.daily-badge)** to get today's message right in your status bar — same packs, same timezone-awareness.
+
+```
+ext install in-c0.daily-badge
+```
+
+Source lives in [`vscode-extension/`](vscode-extension/).
 
 ---
 
