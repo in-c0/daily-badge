@@ -4,42 +4,60 @@ import json
 import pytz
 import os
 
-# ─── Load Timezone ─────────────────────────────────────────────
+# ─── Config ────────────────────────────────────────────────────
 DEFAULT_TZ = "UTC"
-timezone_path = "timezone.txt"
+TIMEZONE_PATH = "timezone.txt"
+CSV_PATH = "What_Day_365.csv"
+BADGE_PATH = "badge.json"
+FALLBACK_MESSAGE = "You're amazing!"
 
-if os.path.exists(timezone_path):
-    try:
-        with open(timezone_path, "r") as f:
-            user_tz = f.read().strip()
-            tz = pytz.timezone(user_tz)
-    except Exception:
-        tz = pytz.timezone(DEFAULT_TZ)
-else:
-    tz = pytz.timezone(DEFAULT_TZ)
 
-# ─── Determine Today (User's Local Time) ───────────────────────
-today = datetime.now(tz)
-month = today.strftime("%B")
-day = today.day
+def load_timezone(path=TIMEZONE_PATH):
+    """Read the user's timezone from timezone.txt, falling back to UTC."""
+    if os.path.exists(path):
+        try:
+            with open(path, "r", encoding="utf-8") as f:
+                return pytz.timezone(f.read().strip())
+        except Exception:
+            return pytz.timezone(DEFAULT_TZ)
+    return pytz.timezone(DEFAULT_TZ)
 
-# ─── Load Messages ─────────────────────────────────────────────
-df = pd.read_csv("What_Day_365.csv")
 
-try:
-    today_message = df[(df["Day"] == f"{month} {day}")]["Message"].values[0]
-except IndexError:
-    today_message = "You're amazing!"
+def load_messages(path=CSV_PATH):
+    """Load the day→message table."""
+    return pd.read_csv(path)
 
-# ─── Create Badge JSON ─────────────────────────────────────────
-badge = {
-    "schemaVersion": 1,
-    "label": "Today is ... ",
-    "message": today_message,
-    "color": "pink"
-}
 
-with open("badge.json", "w") as f:
-    json.dump(badge, f)
+def get_message(df, month, day):
+    """Return the message for a given month name + day, or a fallback."""
+    matches = df[df["Day"] == f"{month} {day}"]["Message"].values
+    if len(matches):
+        return matches[0]
+    return FALLBACK_MESSAGE
 
-print(f"[{today.strftime('%Y-%m-%d')}] Generated badge in timezone: {tz}")
+
+def build_badge(message):
+    """Build the Shields.io endpoint payload."""
+    return {
+        "schemaVersion": 1,
+        "label": "Today is ... ",
+        "message": message,
+        "color": "pink",
+    }
+
+
+def main():
+    tz = load_timezone()
+    today = datetime.now(tz)
+    df = load_messages()
+    message = get_message(df, today.strftime("%B"), today.day)
+    badge = build_badge(message)
+
+    with open(BADGE_PATH, "w", encoding="utf-8") as f:
+        json.dump(badge, f)
+
+    print(f"[{today.strftime('%Y-%m-%d')}] Generated badge in timezone: {tz}")
+
+
+if __name__ == "__main__":
+    main()

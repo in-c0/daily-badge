@@ -5,6 +5,14 @@ on:
     - cron: "0 0 * * *"  # every day at midnight UTC
   workflow_dispatch:
 
+# Never let two badge updates run (and push) at once.
+concurrency:
+  group: daily-badge
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,15 +22,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.x"
+          cache: "pip"
       - name: Install dependencies
-        run: pip install pandas pytz
+        run: pip install -r requirements.txt
       - name: Generate daily badge JSON
-        run: |
-          python generate_badge.py
+        run: python generate_badge.py
       - name: Commit and push
         run: |
           git config user.name github-actions
           git config user.email github-actions@github.com
           git add badge.json
-          git commit -m "Update badge" || echo "No changes to commit"
-          git push
+          if git diff --staged --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "Update badge"
+            git push
+          fi
