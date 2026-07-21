@@ -3,7 +3,7 @@
   "displayName": "Daily Badge",
   "description": "A new quirky message in your status bar every day — on-this-day facts, dev humor, or tech trivia, in your timezone.",
   "version": "1.0.0",
-  "publisher": "your-publisher-id",
+  "publisher": "in-c0",
   "engines": { "vscode": "^1.75.0" },
   "categories": ["Other"],
   "keywords": ["daily", "status bar", "fun", "motivation", "dev humor", "trivia", "on this day", "quotes", "welcome", "productivity"],
