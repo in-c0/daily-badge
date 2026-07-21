@@ -1,9 +1,11 @@
 # Daily Badge — VS Code extension
 
-A quirky daily message in your status bar. Same content as the
-[Daily Badge](https://github.com/in-c0/daily-badge) GitHub profile badge —
-an on-this-day message, developer humor, or tech trivia — refreshed every day
-in **your** timezone.
+**A tiny spark of delight in your status bar, every day.** ✨
+
+Open your editor to a fresh quirky message — an on-this-day fact, a dose of developer
+humor, or a piece of tech trivia — refreshed every day in **your** timezone. Same content
+as the [Daily Badge](https://github.com/in-c0/daily-badge) GitHub profile badge, so your
+editor and your profile stay in sync.
 
 ![Daily Badge demo](https://raw.githubusercontent.com/in-c0/daily-badge/main/assets/daily-badge-demo.gif)
 
