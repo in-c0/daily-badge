@@ -5,12 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "wrangler deploy"
+    "deploy": "wrangler deploy",
+    "gif": "node make-gif.mjs"
   },
   "dependencies": {
     "badge-maker": "^4.1.0"
   },
   "devDependencies": {
+    "gifenc": "^1.0.3",
+    "sharp": "^0.33.0",
     "wrangler": "^3.90.0"
   }
 }

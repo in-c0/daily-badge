@@ -19,9 +19,19 @@ Actions cron, no per-user infra.
 | Param | Default | Notes |
 |-------|---------|-------|
 | `tz` | `UTC` | Any IANA timezone, e.g. `Australia/Sydney`. Invalid → UTC. |
+| `pack` | `default` | `default` \| `dev-humor` \| `tech-facts`. Unknown → `default`. |
 | `color` | `pink` | Any CSS color or Shields color name. |
 | `label` | `Today is ...` | Left side text. |
 | `style` | `for-the-badge` | `flat` \| `flat-square` \| `plastic` \| `for-the-badge` \| `social`. |
+
+### Message packs
+
+Packs live in `src/packs/`. A pack is either:
+- an **object** keyed by `"Month Day"` (date-specific, like `default.json`), or
+- an **array** (rotated by day-of-year, so it stays fresh without 366 entries — how `dev-humor` and `tech-facts` work).
+
+Add a pack by dropping a JSON file in `src/packs/` and registering it in the `PACKS`
+map in `src/index.js`.
 
 ## How it stays fresh (and cheap)
 
