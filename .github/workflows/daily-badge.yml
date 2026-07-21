@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: "3.x"
       - name: Install dependencies
-        run: pip install pandas
+        run: pip install pandas pytz
       - name: Generate daily badge JSON
         run: |
           python generate_badge.py
