@@ -38,7 +38,7 @@ Change when your message flips by editing `timezone.txt` with any [IANA timezone
 There's also a [Cloudflare Worker](worker/) that serves the badge from a single URL — **no fork, no Actions, no per-user setup.** Just paste one line and pick your options:
 
 ```markdown
-![Daily Badge](https://daily-badge.YOUR-SUBDOMAIN.workers.dev/badge.svg?tz=Australia/Sydney&pack=default)
+![Daily Badge](https://daily-badge.wldud5192.workers.dev/badge.svg?tz=Australia/Sydney&pack=default)
 ```
 
 | Param | Options | Default |
@@ -48,7 +48,7 @@ There's also a [Cloudflare Worker](worker/) that serves the badge from a single 
 | `color` | any CSS / Shields color | `pink` |
 | `style` | `flat` · `flat-square` · `plastic` · `for-the-badge` · `social` | `for-the-badge` |
 
-> ⏳ The hosted endpoint goes live once the Worker is deployed — see [`worker/README.md`](worker/README.md) to run it yourself in ~2 minutes.
+> ✨ The hosted endpoint is **live** — try it: [badge.svg](https://daily-badge.wldud5192.workers.dev/badge.svg?tz=Australia/Sydney&pack=dev-humor&style=flat). Want your own instance? See [`worker/README.md`](worker/README.md) to deploy in ~2 minutes.
 
 **Message packs** let the badge feel like *yours*:
 - **default** — a curated "on this day" message for all 366 days
