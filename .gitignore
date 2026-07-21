@@ -10,3 +10,5 @@ badge-preview.html
 PR-DRAFTS.md
 
 renderer-preview.html
+vscode-extension/node_modules/
+*.vsix

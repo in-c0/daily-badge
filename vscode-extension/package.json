@@ -1,0 +1,69 @@
+{
+  "name": "daily-badge",
+  "displayName": "Daily Badge",
+  "description": "A quirky daily message in your status bar — on-this-day fun, dev humor, or tech trivia, in your timezone.",
+  "version": "1.0.0",
+  "publisher": "your-publisher-id",
+  "engines": { "vscode": "^1.75.0" },
+  "categories": ["Other"],
+  "keywords": ["status bar", "fun", "daily", "motivation", "badge", "trivia"],
+  "icon": "icon.png",
+  "galleryBanner": { "color": "#ff4d97", "theme": "dark" },
+  "repository": { "type": "git", "url": "https://github.com/in-c0/daily-badge" },
+  "bugs": { "url": "https://github.com/in-c0/daily-badge/issues" },
+  "homepage": "https://in-c0.github.io/daily-badge/",
+  "license": "MIT",
+  "activationEvents": ["onStartupFinished"],
+  "main": "./extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "dailyBadge.refresh", "title": "Daily Badge: Refresh" },
+      { "command": "dailyBadge.cyclePack", "title": "Daily Badge: Cycle Pack" },
+      { "command": "dailyBadge.openCustomizer", "title": "Daily Badge: Open Customizer" }
+    ],
+    "configuration": {
+      "title": "Daily Badge",
+      "properties": {
+        "dailyBadge.pack": {
+          "type": "string",
+          "enum": ["default", "dev-humor", "tech-facts"],
+          "enumDescriptions": [
+            "A curated on-this-day message for every calendar day",
+            "A rotating dose of developer comedy",
+            "A daily piece of computing trivia"
+          ],
+          "default": "default",
+          "description": "Which message pack to show."
+        },
+        "dailyBadge.timezone": {
+          "type": "string",
+          "default": "",
+          "description": "IANA timezone (e.g. Australia/Sydney). Leave empty to use your system timezone."
+        },
+        "dailyBadge.endpoint": {
+          "type": "string",
+          "default": "https://daily-badge.wldud5192.workers.dev",
+          "description": "Daily Badge Worker endpoint. Point this at your own deployment if you self-host."
+        },
+        "dailyBadge.alignment": {
+          "type": "string",
+          "enum": ["left", "right"],
+          "default": "right",
+          "description": "Status bar alignment (requires reload if changed while running)."
+        },
+        "dailyBadge.maxLength": {
+          "type": "number",
+          "default": 45,
+          "description": "Max characters shown in the status bar. Full text is always in the tooltip."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "echo 'no build step'"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.75.0",
+    "@vscode/vsce": "^3.0.0"
+  }
+}
