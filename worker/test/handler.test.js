@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { handle, readParams, LANDING_URL } from "../src/index.js";
+import { handle, readParams, LANDING_URL } from "../src/app.js";
 import { remotePackUrl, validateRemotePack, fetchRemotePack } from "../src/remote.js";
 
 const NOW = new Date("2026-09-11T02:00:00Z"); // 12:00 in Sydney, 22:00 (Sep 10) in New York
@@ -174,3 +174,11 @@ test("remote pack end-to-end, including failure modes", async () => {
   assert.equal(await fetchRemotePack(url, async () => new Response("x".repeat(70000))), undefined);
 });
 
+
+test("entry module exports only the handler (Workers runtime rejects other named exports)", async () => {
+  const entry = await import("../src/index.js");
+  assert.deepEqual(Object.keys(entry), ["default"]);
+  assert.equal(typeof entry.default.fetch, "function");
+  const res = await entry.default.fetch(new Request("https://x.workers.dev/health"));
+  assert.equal(res.status, 200);
+});
