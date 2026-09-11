@@ -103,9 +103,27 @@
       <div>
         <label for="pack">Message pack</label>
         <select id="pack">
-          <option value="default">default — on-this-day fun</option>
-          <option value="dev-humor">dev-humor — developer comedy 🐛</option>
-          <option value="tech-facts">tech-facts — computing trivia 💡</option>
+          <option value="default">🌟 default — On this day</option>
+          <option value="dev-humor">🐛 dev-humor — Developer humor</option>
+          <option value="tech-facts">💡 tech-facts — Tech facts</option>
+          <option value="motivation">🔥 motivation</option>
+          <option value="stoic">🏛️ stoic</option>
+          <option value="science">🔬 science</option>
+          <option value="space">🪐 space</option>
+          <option value="wholesome">💖 wholesome</option>
+          <option value="productivity">⏱️ productivity</option>
+          <option value="puns">🥁 puns</option>
+          <option value="ko">🇰🇷 ko</option>
+          <option value="ja">🇯🇵 ja</option>
+          <option value="es">🇪🇸 es</option>
+          <option value="fr">🇫🇷 fr</option>
+          <option value="de">🇩🇪 de</option>
+          <option value="pt">🇧🇷 pt</option>
+          <option value="zh">🇨🇳 zh</option>
+          <option value="moon">🌕 moon</option>
+          <option value="weekday">📅 weekday</option>
+          <option value="year">📈 year</option>
+          <option value="countdown">⏳ countdown</option>
         </select>
       </div>
       <div>
@@ -139,67 +157,40 @@
 </div>
 
 <script>
-// The deployed Worker host. Swapped to the real workers.dev URL at launch.
-const WORKER_HOST = "https://daily-badge.YOUR-SUBDOMAIN.workers.dev";
-const LABEL = "Today is ...";
-const FALLBACK = "You're amazing!";
+// The live Worker. Every preview and snippet points here.
+const WORKER_HOST = "https://daily-badge.wldud5192.workers.dev";
 const DAY = 86400000;
 
 const TIMEZONES = [
-  "UTC","Australia/Sydney","Australia/Melbourne","Pacific/Auckland",
-  "Asia/Seoul","Asia/Tokyo","Asia/Shanghai","Asia/Singapore","Asia/Kolkata","Asia/Dubai",
-  "Europe/London","Europe/Paris","Europe/Berlin","Europe/Madrid","Europe/Moscow",
-  "America/New_York","America/Chicago","America/Denver","America/Los_Angeles","America/Sao_Paulo",
-  "Africa/Johannesburg","Africa/Cairo","Africa/Lagos"
+  "UTC","Australia/Sydney","Australia/Melbourne","Australia/Perth","Pacific/Auckland",
+  "Asia/Seoul","Asia/Tokyo","Asia/Shanghai","Asia/Hong_Kong","Asia/Singapore","Asia/Kolkata","Asia/Dubai","Asia/Jakarta",
+  "Europe/London","Europe/Paris","Europe/Berlin","Europe/Madrid","Europe/Rome","Europe/Amsterdam","Europe/Stockholm","Europe/Moscow","Europe/Istanbul",
+  "America/New_York","America/Chicago","America/Denver","America/Los_Angeles","America/Toronto","America/Vancouver","America/Mexico_City","America/Sao_Paulo","America/Buenos_Aires",
+  "Africa/Johannesburg","Africa/Cairo","Africa/Lagos","Africa/Nairobi"
 ];
 const COLORS = ["pink","hotpink","blueviolet","orange","green","blue","red","gold","teal"];
-
-const packs = {};
-async function loadPacks() {
-  const names = ["default","dev-humor","tech-facts"];
-  await Promise.all(names.map(async n => {
-    const res = await fetch(`./worker/src/packs/${n}.json`);
-    packs[n] = await res.json();
-  }));
-}
-
-function todayKey(tz) {
-  try { return new Intl.DateTimeFormat("en-US",{timeZone:tz,month:"long",day:"numeric"}).format(new Date()); }
-  catch { return new Intl.DateTimeFormat("en-US",{timeZone:"UTC",month:"long",day:"numeric"}).format(new Date()); }
-}
-function dayOfYear(tz) {
-  let iso;
-  try { iso = new Intl.DateTimeFormat("en-CA",{timeZone:tz,year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()); }
-  catch { iso = new Intl.DateTimeFormat("en-CA",{timeZone:"UTC",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date()); }
-  const [y,m,d] = iso.split("-").map(Number);
-  return Math.floor((Date.UTC(y,m-1,d) - Date.UTC(y,0,0)) / DAY);
-}
-function messageFor(pack, tz) {
-  const p = packs[pack] || packs.default;
-  if (!p) return FALLBACK;
-  if (Array.isArray(p)) return p[(dayOfYear(tz)-1) % p.length];
-  return p[todayKey(tz)] || FALLBACK;
-}
-
-// Shields static-badge escaping: -->--, _-->__, then URL-encode.
-function esc(s){ return encodeURIComponent(String(s).replace(/-/g,"--").replace(/_/g,"__")); }
 
 const $ = id => document.getElementById(id);
 
 function render() {
   const tz = $("tz").value, pack = $("pack").value, style = $("style").value, color = $("color").value || "pink";
-  const message = messageFor(pack, tz);
-
-  // Live preview via shields static badge (works before the Worker is deployed).
-  $("preview").src = `https://img.shields.io/badge/${esc(LABEL)}-${esc(message)}-${esc(color)}?style=${encodeURIComponent(style)}`;
-  $("msgNote").textContent = `Today (${todayKey(tz)}): “${message}”`;
-
-  // Copy snippet points at the dynamic Worker endpoint.
   const q = `tz=${encodeURIComponent(tz)}&pack=${encodeURIComponent(pack)}&color=${encodeURIComponent(color)}&style=${encodeURIComponent(style)}`;
-  $("snippet").textContent = `![Daily Badge](${WORKER_HOST}/badge.svg?${q})`;
-  $("hostHint").innerHTML = WORKER_HOST.includes("YOUR-SUBDOMAIN")
-    ? "⏳ The hosted endpoint isn’t live yet — the preview above is real, and this snippet will work the moment the Worker is deployed."
-    : "This badge updates automatically every day at your local midnight.";
+  const url = `${WORKER_HOST}/badge.svg?${q}`;
+  $("preview").src = url;
+  $("snippet").textContent = `![Daily Badge](${url})`;
+  $("hostHint").textContent = "This badge updates automatically every day at your local midnight.";
+  fetch(`${WORKER_HOST}/api/today?tz=${encodeURIComponent(tz)}&pack=${encodeURIComponent(pack)}`)
+    .then(r => r.json())
+    .then(t => { $("msgNote").textContent = `Today (${t.date}, ${t.pack}): “${t.message}”`; })
+    .catch(() => { $("msgNote").textContent = "Could not reach the badge service."; });
+}
+
+async function loadPacks() {
+  const res = await fetch(`${WORKER_HOST}/api/packs`);
+  const { packs } = await res.json();
+  $("pack").innerHTML = packs.map(p =>
+    `<option value="${p.name}">${p.emoji} ${p.name} — ${p.title}</option>`
+  ).join("");
 }
 
 function init() {
@@ -230,7 +221,7 @@ function init() {
   render();
 }
 
-loadPacks().then(init).catch(() => { $("msgNote").textContent = "Could not load message packs."; });
+loadPacks().then(init).catch(() => { init(); $("msgNote").textContent = "Could not load message packs."; });
 </script>
 </body>
 </html>

@@ -9,18 +9,42 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  python:
+    name: Fork path (Python)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.x"
-          cache: "pip"
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
-          pip install pytest
-      - name: Run tests
-        run: pytest -v
+      - run: pip install pytest
+      - run: pytest -v
+
+  worker:
+    name: Worker (Node)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - name: Bundle check (dry run)
+        run: npx wrangler deploy --dry-run --outdir dist
+
+  action:
+    name: README action (self-test)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Run the action against its own fixture
+        run: node action/update-readme.mjs --file action/fixture.md --pack dev-humor --tz UTC --dry-run

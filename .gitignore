@@ -5,7 +5,6 @@ __pycache__/
 # Node / Cloudflare Worker
 node_modules/
 .wrangler/
-worker/package-lock.json
 badge-preview.html
 PR-DRAFTS.md
 

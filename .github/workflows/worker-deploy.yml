@@ -1,0 +1,55 @@
+name: Deploy Worker
+
+# Deploys worker/ to Cloudflare whenever it changes on main, after the tests
+# pass. Needs a repo secret CLOUDFLARE_API_TOKEN (Workers Scripts: Edit).
+# Without the secret the job is skipped, not failed, so forks stay green.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "worker/**"
+      - ".github/workflows/worker-deploy.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: worker-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - run: npm ci --ignore-scripts
+      - run: npm test
+      - name: Check for deploy token
+        id: token
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: echo "present=${{ env.CLOUDFLARE_API_TOKEN != '' }}" >> "$GITHUB_OUTPUT"
+      - name: Deploy
+        if: steps.token.outputs.present == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          workingDirectory: worker
+      - name: Smoke test the live endpoint
+        if: steps.token.outputs.present == 'true'
+        run: |
+          set -e
+          url="https://daily-badge.wldud5192.workers.dev"
+          curl -fsS "$url/health" | grep -q '"ok":true'
+          curl -fsS "$url/badge.svg?tz=Australia/Sydney&pack=dev-humor" | grep -q '<svg'
+          curl -fsS "$url/badge.json" | grep -q '"schemaVersion":1'
+      - name: Skipped (no CLOUDFLARE_API_TOKEN secret)
+        if: steps.token.outputs.present != 'true'
+        run: echo "No CLOUDFLARE_API_TOKEN secret configured — build verified, deploy skipped."
