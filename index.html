@@ -3,225 +3,663 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Daily Badge — Customizer</title>
+<title>daily-badge — a new message on your GitHub profile every day</title>
+<meta name="description" content="One URL gives your GitHub profile a badge whose message changes every day in your timezone. Pick a pack, a style, a colour, copy the line." />
+<meta property="og:title" content="daily-badge" />
+<meta property="og:description" content="A new message on your GitHub profile every day, in your timezone. 21 packs, 8 languages, or your own list." />
+<meta property="og:image" content="https://daily-badge.wldud5192.workers.dev/badge.svg?tz=UTC" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="preconnect" href="https://daily-badge.wldud5192.workers.dev" />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@600&family=Noto+Serif+JP:wght@600&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet" />
 <style>
+  /* ── Tokens (design/DESIGN.md · Paper Midnight) ───────────── */
   :root {
-    --bg: #fff5f9;
-    --card: #ffffff;
-    --ink: #2b2130;
-    --muted: #8a7d8f;
-    --accent: #ff4d97;
-    --accent-ink: #fff;
-    --border: #f0d9e6;
-    --code-bg: #2b2130;
-    --code-ink: #ffd9ec;
+    color-scheme: light dark;
+    --desk: #EAE1D2;
+    --paper: #FFF8EA;
+    --ink: #24201D;
+    --muted: #6D655D;
+    --rule: #968A7C;
+    --accent: #FF4D97;
+    --accent-soft: #FFE1EE;
+    --accent-ink: #24201D;
+    --focus: #A81E5E;
+    --code-bg: #24201D;
+    --code-ink: #FFF8EA;
+    --sheet-shadow: 2px 2px 0 rgba(36, 32, 29, .14);
+    --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px; --s7: 48px; --s8: 64px;
+    --serif: "Fraunces", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    --ease-exit: cubic-bezier(.42, 0, .78, .28);
+    --ease-settle: cubic-bezier(.16, 1, .30, 1);
+    --ease-ui: cubic-bezier(.2, .8, .2, 1);
+    --ease-press: cubic-bezier(.2, .9, .3, 1);
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --bg: #17121c;
-      --card: #211a28;
-      --ink: #f4ecf5;
-      --muted: #a394ad;
-      --accent: #ff5fa2;
-      --accent-ink: #1a1020;
-      --border: #362b40;
-      --code-bg: #0f0b13;
-      --code-ink: #ffd9ec;
+      --desk: #151412;
+      --paper: #24211D;
+      --ink: #F8F0E4;
+      --muted: #B8AEA2;
+      --rule: #7A7166;
+      --accent: #FF6AA9;
+      --accent-soft: #4A2435;
+      --accent-ink: #181614;
+      --focus: #FF92BF;
+      --code-bg: #0F0E0D;
+      --code-ink: #F8F0E4;
+      --sheet-shadow: 2px 2px 0 rgba(0, 0, 0, .34);
     }
   }
+
   * { box-sizing: border-box; }
+  html { background: var(--desk); }
   body {
     margin: 0;
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-    background: var(--bg);
+    background: var(--desk);
     color: var(--ink);
-    line-height: 1.5;
+    font: 400 17px/1.55 var(--serif);
+    -webkit-font-smoothing: antialiased;
   }
-  .wrap { max-width: 760px; margin: 0 auto; padding: 32px 20px 64px; }
-  header { text-align: center; margin-bottom: 28px; }
-  h1 { font-size: 2rem; margin: 0 0 6px; }
-  h1 .emoji { -webkit-text-fill-color: initial; }
-  .tag { color: var(--muted); margin: 0; }
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 22px;
-    box-shadow: 0 6px 24px rgba(0,0,0,.05);
+  a { color: inherit; }
+  .mono { font-family: var(--mono); }
+  :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+  .visually-hidden {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
   }
-  .preview {
-    display: flex; align-items: center; justify-content: center;
-    min-height: 92px; margin-bottom: 8px;
-    background: repeating-conic-gradient(rgba(128,128,128,.06) 0% 25%, transparent 0% 50%) 50% / 22px 22px;
-    border-radius: 12px;
+
+  .stage-wrap { max-width: 1040px; margin: 0 auto; padding: 0 var(--s6); }
+  @media (max-width: 600px) { .stage-wrap { padding: 0 var(--s3); } }
+
+  /* ── Masthead ─────────────────────────────────────────────── */
+  header.masthead {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: var(--s5) 0 var(--s4);
+    font: 600 12px/1.4 var(--mono); letter-spacing: .06em;
   }
-  .preview img { max-width: 100%; height: auto; }
-  .msg-note { text-align: center; color: var(--muted); font-size: .85rem; margin: 0 0 22px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  @media (max-width: 520px) { .grid { grid-template-columns: 1fr; } }
-  label { display: block; font-weight: 600; font-size: .85rem; margin-bottom: 6px; }
-  select, input[type=text] {
-    width: 100%; padding: 10px 12px; border-radius: 10px;
-    border: 1px solid var(--border); background: var(--bg); color: var(--ink);
-    font-size: .95rem;
+  header.masthead nav a { margin-left: var(--s4); text-decoration: underline; text-underline-offset: 3px; }
+
+  /* ── Calendar stage: two sheet layers in one grid cell ─────── */
+  .stage { position: relative; display: grid; overflow: hidden; }
+  .sheet {
+    grid-area: 1 / 1;
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    background: var(--paper);
+    border-radius: 2px;
+    box-shadow: var(--sheet-shadow);
+    padding: var(--s6) 40px var(--s6) 0;
+    z-index: 1;
   }
-  .swatches { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
-  .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
-  .swatch[aria-pressed=true] { border-color: var(--ink); }
-  .snippet-head { display: flex; align-items: center; justify-content: space-between; margin: 26px 0 8px; }
-  .snippet-head h2 { font-size: 1rem; margin: 0; }
-  button.copy {
-    background: var(--accent); color: var(--accent-ink); border: 0;
-    padding: 8px 16px; border-radius: 999px; font-weight: 700; cursor: pointer; font-size: .85rem;
+  .sheet.current { z-index: 2; }
+  .sheet.next { visibility: hidden; }
+  .sheet.next.staging { visibility: visible; }
+
+  .rail {
+    display: flex; flex-direction: column; align-items: center; gap: var(--s2);
+    padding-top: var(--s1);
+    border-right: 1px solid var(--rule);
+    font: 600 11px/1.35 var(--mono); letter-spacing: .08em; text-transform: uppercase;
   }
-  button.copy:active { transform: translateY(1px); }
-  pre {
-    background: var(--code-bg); color: var(--code-ink); padding: 14px 16px;
-    border-radius: 12px; overflow-x: auto; margin: 0; font-size: .82rem;
+  .rail .day { font: 700 32px/1 var(--serif); font-variant-numeric: tabular-nums; }
+
+  .body { padding-left: var(--s6); min-width: 0; display: flex; flex-direction: column; }
+  .pack-label { font: 600 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+  .badge-slot { margin: var(--s3) 0 var(--s5); min-height: 28px; }
+  .badge-slot img { display: block; max-width: 100%; height: auto; }
+
+  .message {
+    margin: 0;
+    font-weight: 600;
+    font-size: clamp(32px, var(--message-fluid, calc(28px + 2vw)), 88px);
+    line-height: .98;
+    max-inline-size: min(18ch, 760px);
+    text-wrap: balance;
+    overflow-wrap: anywhere;
   }
-  .hint { color: var(--muted); font-size: .8rem; margin-top: 10px; }
-  footer { text-align: center; color: var(--muted); font-size: .85rem; margin-top: 34px; }
-  a { color: var(--accent); }
+  .message.len-xs { --message-fluid: calc(38px + 3.5vw); }
+  .message.len-sm { --message-fluid: calc(32px + 2.6vw); }
+  .message.len-md { --message-fluid: calc(28px + 2vw); }
+  .message.len-lg { --message-fluid: calc(26px + 1.5vw); }
+  .message[data-script="latin"]    { font-family: var(--serif); }
+  .message[data-script="hangul"]   { font-family: "Noto Serif KR", "AppleMyungjo", Batang, serif; line-height: 1.10; max-inline-size: min(10em, 760px); word-break: keep-all; }
+  .message[data-script="japanese"] { font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", "Hiragino Mincho Pro", serif; line-height: 1.10; max-inline-size: min(10em, 760px); line-break: strict; }
+  .message[data-script="chinese"]  { font-family: "Noto Serif SC", "Songti SC", STSong, SimSun, serif; line-height: 1.10; max-inline-size: min(10em, 760px); line-break: strict; }
+
+  .footnote {
+    margin-top: var(--s5); flex: 1;
+    font: 500 11px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase;
+    color: var(--muted); font-variant-numeric: tabular-nums;
+  }
+
+  .perforation { margin: var(--s5) 0 var(--s4); border: 0; border-top: 1px dashed var(--rule); height: 0; }
+
+  /* ── Printer strip ────────────────────────────────────────── */
+  .strip { display: grid; grid-template-columns: 1.35fr 1.35fr 1fr .9fr; gap: var(--s3); margin: 0; }
+  .field { display: flex; flex-direction: column; gap: var(--s2); min-width: 0; }
+  .field > label { font: 600 10px/1.2 var(--mono); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+  .field select, .field input[type="text"] {
+    appearance: none; -webkit-appearance: none;
+    width: 100%; height: 44px;
+    background: transparent; color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 0 32px 0 10px;
+    font: 500 14px/1.25 var(--mono);
+    transition: background-color 90ms var(--ease-ui), border-color 90ms var(--ease-ui);
+  }
+  .field select {
+    background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%), linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+    background-position: calc(100% - 18px) 19px, calc(100% - 12px) 19px;
+    background-size: 6px 6px; background-repeat: no-repeat;
+  }
+  .field select:hover, .field input[type="text"]:hover { background-color: var(--accent-soft); }
+  .colour-group { display: flex; gap: var(--s2); align-items: center; }
+  .colour-group input[type="color"] {
+    appearance: none; -webkit-appearance: none;
+    width: 44px; height: 44px; padding: 5px; flex: 0 0 44px;
+    border: 1px solid var(--rule); border-radius: 3px; background: transparent; cursor: pointer;
+  }
+  .colour-group input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+  .colour-group input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 2px; }
+  .colour-group input[type="color"]::-moz-color-swatch { border: 0; border-radius: 2px; }
+  .colour-group input[type="text"] { padding-right: 10px; }
+
+  /* ── Markdown strip ───────────────────────────────────────── */
+  .md-strip {
+    display: flex; align-items: center; gap: var(--s3);
+    background: var(--code-bg); color: var(--code-ink);
+    border-radius: 0 0 4px 4px; padding: var(--s3) var(--s4);
+    margin-top: 1px;
+  }
+  .md-strip code {
+    flex: 1; min-width: 0; font: 500 13px/1.5 var(--mono);
+    white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  .copy {
+    flex: 0 0 auto; height: 32px; padding: 0 14px;
+    background: var(--accent); color: var(--accent-ink);
+    border: 0; border-radius: 3px; cursor: pointer;
+    font: 600 11px/1 var(--mono); letter-spacing: .08em; text-transform: uppercase;
+    transition: transform 140ms var(--ease-press);
+  }
+  .copy.pressed { transform: translateY(1px); }
+  .copy:focus-visible { outline-color: var(--code-ink); }
+
+  /* ── Lower page ───────────────────────────────────────────── */
+  .lower { margin-top: var(--s8); }
+  .lower h2 { font: 600 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 0 0 var(--s4); }
+  .lower section + section { margin-top: var(--s8); }
+  .lower p { max-width: 62ch; margin: 0 0 var(--s4); }
+
+  ol.wall { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  ol.wall li { border-bottom: 1px solid var(--rule); }
+  ol.wall button {
+    display: grid; grid-template-columns: 140px minmax(0, 1fr); gap: var(--s4); align-items: baseline;
+    width: 100%; text-align: left; padding: var(--s4) var(--s2);
+    background: transparent; color: var(--ink); border: 0; cursor: pointer;
+    transition: background-color 90ms var(--ease-ui);
+  }
+  ol.wall button:hover { background: var(--accent-soft); }
+  ol.wall button[aria-pressed="true"] .name::before { content: "▸ "; color: var(--accent); }
+  ol.wall .name { font: 600 12px/1.4 var(--mono); letter-spacing: .06em; text-transform: uppercase; }
+  ol.wall .text { font: 600 20px/1.35 var(--serif); overflow-wrap: anywhere; }
+  ol.wall .text[data-script="hangul"]   { font-family: "Noto Serif KR", "AppleMyungjo", Batang, serif; line-height: 1.5; word-break: keep-all; }
+  ol.wall .text[data-script="japanese"] { font-family: "Noto Serif JP", "Yu Mincho", "Hiragino Mincho ProN", serif; line-height: 1.5; }
+  ol.wall .text[data-script="chinese"]  { font-family: "Noto Serif SC", "Songti SC", STSong, SimSun, serif; line-height: 1.5; }
+  @media (max-width: 600px) { ol.wall button { grid-template-columns: 1fr; gap: var(--s1); } }
+
+  pre.spec {
+    margin: 0 0 var(--s4); padding: var(--s3) var(--s4);
+    background: var(--code-bg); color: var(--code-ink); border-radius: 3px;
+    font: 500 13px/1.5 var(--mono); overflow-x: auto; max-width: 62ch;
+  }
+  .note { font: 500 11px/1.4 var(--mono); color: var(--muted); letter-spacing: .04em; }
+
+  footer.end {
+    margin: var(--s8) 0 var(--s7); padding-top: var(--s4); border-top: 1px solid var(--rule);
+    font: 500 11px/1.6 var(--mono); letter-spacing: .04em; color: var(--muted);
+  }
+  footer.end a { margin-right: var(--s4); }
+
+  /* ── Phone ────────────────────────────────────────────────── */
+  @media (max-width: 600px) {
+    .sheet { grid-template-columns: 1fr; padding: 20px 16px 16px; }
+    .rail { flex-direction: row; justify-content: flex-start; gap: var(--s3); border-right: 0; border-bottom: 1px solid var(--rule); padding: 0 0 var(--s3); margin-bottom: var(--s3); }
+    .rail .day { font-size: 26px; }
+    .body { padding-left: 0; }
+    .footnote { margin-top: var(--s4); }
+    .strip { grid-template-columns: 1fr 1fr; }
+    .md-strip { padding: var(--s3); }
+  }
+  @media (max-width: 420px) {
+    .field.tz, .field.pack { grid-column: 1 / -1; }
+  }
+
+  /* ── Motion (the tear) ────────────────────────────────────── */
+  .sheet.current.tearing {
+    animation: tear 280ms var(--ease-exit) forwards;
+  }
+  .sheet.next.settling {
+    animation: settle 320ms var(--ease-settle) 70ms both;
+  }
+  @keyframes tear {
+    from { transform: translateY(0) rotate(0deg); clip-path: inset(0 0 0 0); }
+    to   { transform: translateY(-44px) rotate(-.35deg); clip-path: inset(0 0 100% 0); }
+  }
+  @keyframes settle {
+    from { transform: translateY(6px); }
+    to   { transform: translateY(0); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sheet.current.tearing, .sheet.next.settling { animation: none; }
+    .field select, .field input, .copy, ol.wall button { transition: none; }
+    html { scroll-behavior: auto; }
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <header>
-    <h1><span class="emoji">🌟</span> Daily Badge</h1>
-    <p class="tag">A new message on your GitHub profile every day — in your timezone.</p>
+<div class="stage-wrap">
+
+  <header class="masthead">
+    <span>daily-badge</span>
+    <nav aria-label="Project links">
+      <a href="https://github.com/in-c0/daily-badge">Source</a>
+      <a href="https://daily-badge.wldud5192.workers.dev/api/packs">API</a>
+    </nav>
   </header>
 
-  <div class="card">
-    <div class="preview"><img id="preview" alt="badge preview" /></div>
-    <p class="msg-note" id="msgNote">Today’s message…</p>
+  <section class="stage" aria-label="Today's sheet">
+    <!-- Current sheet: what the visitor sees. Its content is replaced by the
+         tear; the static defaults below are what no-JS visitors get. -->
+    <article class="sheet current" id="sheetA">
+      <div class="rail"><time class="date" datetime=""><span class="wd">—</span></time><span class="day">–</span><span class="mo">—</span></div>
+      <div class="body">
+        <div class="pack-label">default</div>
+        <div class="badge-slot">
+          <img class="badge" alt="Today's badge" src="https://daily-badge.wldud5192.workers.dev/badge.svg?tz=UTC" />
+        </div>
+        <p class="message len-md" data-script="latin">Loading today's message…</p>
+        <div class="footnote">NEXT SHEET IN —</div>
+        <hr class="perforation" aria-hidden="true" />
+        <form class="strip" aria-label="Badge options" onsubmit="return false">
+          <div class="field tz">
+            <label for="tzA">Timezone</label>
+            <select id="tzA" name="tz" data-role="tz"><option>UTC</option></select>
+          </div>
+          <div class="field pack">
+            <label for="packA">Pack</label>
+            <select id="packA" name="pack" data-role="pack"><option value="default">default</option></select>
+          </div>
+          <div class="field">
+            <label for="styleA">Style</label>
+            <select id="styleA" name="style" data-role="style">
+              <option>for-the-badge</option><option>flat</option><option>flat-square</option><option>plastic</option><option>social</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="colourA">Colour</label>
+            <div class="colour-group">
+              <input type="color" id="colourA" data-role="colour" value="#ff4d97" aria-label="Badge colour" />
+              <input type="text" data-role="colourText" value="#ff4d97" maxlength="7" spellcheck="false" aria-label="Badge colour as hex" />
+            </div>
+          </div>
+        </form>
+      </div>
+    </article>
+    <!-- Next sheet: identical structure, filled and image-loaded before the tear. -->
+    <article class="sheet next" id="sheetB" aria-hidden="true">
+      <div class="rail"><time class="date" datetime=""><span class="wd">—</span></time><span class="day">–</span><span class="mo">—</span></div>
+      <div class="body">
+        <div class="pack-label"></div>
+        <div class="badge-slot"><img class="badge" alt="" src="" /></div>
+        <p class="message" data-script="latin"></p>
+        <div class="footnote"></div>
+        <hr class="perforation" aria-hidden="true" />
+        <form class="strip" aria-label="Badge options" onsubmit="return false">
+          <div class="field tz"><label for="tzB">Timezone</label><select id="tzB" data-role="tz"></select></div>
+          <div class="field pack"><label for="packB">Pack</label><select id="packB" data-role="pack"></select></div>
+          <div class="field"><label for="styleB">Style</label><select id="styleB" data-role="style">
+            <option>for-the-badge</option><option>flat</option><option>flat-square</option><option>plastic</option><option>social</option>
+          </select></div>
+          <div class="field"><label for="colourB">Colour</label><div class="colour-group">
+            <input type="color" id="colourB" data-role="colour" value="#ff4d97" aria-label="Badge colour" />
+            <input type="text" data-role="colourText" value="#ff4d97" maxlength="7" spellcheck="false" aria-label="Badge colour as hex" />
+          </div></div>
+        </form>
+      </div>
+    </article>
+  </section>
 
-    <div class="grid">
-      <div>
-        <label for="tz">Timezone</label>
-        <select id="tz"></select>
-      </div>
-      <div>
-        <label for="pack">Message pack</label>
-        <select id="pack">
-          <option value="default">🌟 default — On this day</option>
-          <option value="dev-humor">🐛 dev-humor — Developer humor</option>
-          <option value="tech-facts">💡 tech-facts — Tech facts</option>
-          <option value="motivation">🔥 motivation</option>
-          <option value="stoic">🏛️ stoic</option>
-          <option value="science">🔬 science</option>
-          <option value="space">🪐 space</option>
-          <option value="wholesome">💖 wholesome</option>
-          <option value="productivity">⏱️ productivity</option>
-          <option value="puns">🥁 puns</option>
-          <option value="ko">🇰🇷 ko</option>
-          <option value="ja">🇯🇵 ja</option>
-          <option value="es">🇪🇸 es</option>
-          <option value="fr">🇫🇷 fr</option>
-          <option value="de">🇩🇪 de</option>
-          <option value="pt">🇧🇷 pt</option>
-          <option value="zh">🇨🇳 zh</option>
-          <option value="moon">🌕 moon</option>
-          <option value="weekday">📅 weekday</option>
-          <option value="year">📈 year</option>
-          <option value="countdown">⏳ countdown</option>
-        </select>
-      </div>
-      <div>
-        <label for="style">Style</label>
-        <select id="style">
-          <option>for-the-badge</option>
-          <option>flat</option>
-          <option>flat-square</option>
-          <option>plastic</option>
-          <option>social</option>
-        </select>
-      </div>
-      <div>
-        <label for="color">Color</label>
-        <input type="text" id="color" value="pink" />
-        <div class="swatches" id="swatches"></div>
-      </div>
-    </div>
+  <div class="md-strip">
+    <code id="snippet">![Daily Badge](https://daily-badge.wldud5192.workers.dev/badge.svg?tz=UTC)</code>
+    <button type="button" class="copy" id="copy">Copy</button>
+  </div>
+  <div class="visually-hidden" role="status" aria-live="polite" id="status"></div>
 
-    <div class="snippet-head">
-      <h2>Paste this into your profile README</h2>
-      <button class="copy" id="copy">Copy</button>
-    </div>
-    <pre><code id="snippet"></code></pre>
-    <p class="hint" id="hostHint"></p>
+  <div class="lower">
+    <section aria-labelledby="wall-h">
+      <h2 id="wall-h">Today, from every pack</h2>
+      <ol class="wall" id="wall"></ol>
+      <p class="note" id="wall-note"></p>
+    </section>
+
+    <section aria-labelledby="byo-h">
+      <h2 id="byo-h">Bring your own messages</h2>
+      <p>Put a JSON file in any public GitHub repo or gist and point the badge at it. No fork, no pull request.</p>
+      <pre class="spec">?pack=gh:YOUR-USER/YOUR-REPO/messages.json
+
+["Ship it", "Fix it", "Ship it again"]</pre>
+      <p>A list rotates by day of the year. An object keyed like <span class="mono">"December 25"</span> is date-specific. Files up to 64 KB, refreshed hourly. If the file is missing the badge says so in red rather than going quiet.</p>
+    </section>
+
+    <section aria-labelledby="action-h">
+      <h2 id="action-h">As text, not an image</h2>
+      <p>If you would rather have today's line as real text in your README, the GitHub Action rewrites a marked block once a day. Add <span class="mono">&lt;!-- daily-badge:start --&gt;</span> and <span class="mono">&lt;!-- daily-badge:end --&gt;</span> to your profile README, then:</p>
+      <pre class="spec">- uses: in-c0/daily-badge@v2
+  with:
+    pack: dev-humor
+    tz: Australia/Sydney</pre>
+    </section>
+
+    <section aria-labelledby="how-h">
+      <h2 id="how-h">How it works</h2>
+      <p>The badge is an SVG computed at the edge by a Cloudflare Worker. Each response is cached until your local midnight, then the next message appears. Nothing about you is stored. The renderer is a port of Shields.io's, so it looks the same as the badges you already have.</p>
+    </section>
   </div>
 
-  <footer>
-    Made with 💖 · <a href="https://github.com/in-c0/daily-badge">source on GitHub</a>
+  <footer class="end">
+    <a href="https://github.com/in-c0/daily-badge">github.com/in-c0/daily-badge</a>
+    <a href="https://daily-badge.wldud5192.workers.dev/api/packs">/api/packs</a>
+    <a href="https://daily-badge.wldud5192.workers.dev/api/today">/api/today</a>
+    <a href="https://github.com/in-c0/daily-badge/blob/main/worker/README.md">parameters</a>
   </footer>
 </div>
 
 <script>
-// The live Worker. Every preview and snippet points here.
-const WORKER_HOST = "https://daily-badge.wldud5192.workers.dev";
-const DAY = 86400000;
+(() => {
+  // Dev only: ?host=http://127.0.0.1:8787 points the page at a local `wrangler dev`.
+  const devHost = new URLSearchParams(location.search).get("host") || "";
+  const HOST = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(devHost) ? devHost : "https://daily-badge.wldud5192.workers.dev";
+  const $ = (sel, root = document) => root.querySelector(sel);
+  const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)");
 
-const TIMEZONES = [
-  "UTC","Australia/Sydney","Australia/Melbourne","Australia/Perth","Pacific/Auckland",
-  "Asia/Seoul","Asia/Tokyo","Asia/Shanghai","Asia/Hong_Kong","Asia/Singapore","Asia/Kolkata","Asia/Dubai","Asia/Jakarta",
-  "Europe/London","Europe/Paris","Europe/Berlin","Europe/Madrid","Europe/Rome","Europe/Amsterdam","Europe/Stockholm","Europe/Moscow","Europe/Istanbul",
-  "America/New_York","America/Chicago","America/Denver","America/Los_Angeles","America/Toronto","America/Vancouver","America/Mexico_City","America/Sao_Paulo","America/Buenos_Aires",
-  "Africa/Johannesburg","Africa/Cairo","Africa/Lagos","Africa/Nairobi"
-];
-const COLORS = ["pink","hotpink","blueviolet","orange","green","blue","red","gold","teal"];
+  // ── State ──────────────────────────────────────────────────
+  const state = { tz: "UTC", pack: "default", style: "for-the-badge", colour: "#ff4d97" };
+  let packs = [];            // from /api/packs
+  let current = $("#sheetA");
+  let next = $("#sheetB");
+  let busy = false;
+  let pending = null;
 
-const $ = id => document.getElementById(id);
+  // ── Helpers ────────────────────────────────────────────────
+  const WD = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+  const MO = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 
-function render() {
-  const tz = $("tz").value, pack = $("pack").value, style = $("style").value, color = $("color").value || "pink";
-  const q = `tz=${encodeURIComponent(tz)}&pack=${encodeURIComponent(pack)}&color=${encodeURIComponent(color)}&style=${encodeURIComponent(style)}`;
-  const url = `${WORKER_HOST}/badge.svg?${q}`;
-  $("preview").src = url;
-  $("snippet").textContent = `![Daily Badge](${url})`;
-  $("hostHint").textContent = "This badge updates automatically every day at your local midnight.";
-  fetch(`${WORKER_HOST}/api/today?tz=${encodeURIComponent(tz)}&pack=${encodeURIComponent(pack)}`)
-    .then(r => r.json())
-    .then(t => { $("msgNote").textContent = `Today (${t.date}, ${t.pack}): “${t.message}”`; })
-    .catch(() => { $("msgNote").textContent = "Could not reach the badge service."; });
-}
+  function localParts(tz, now = new Date()) {
+    let f;
+    try { f = new Intl.DateTimeFormat("en-US", { timeZone: tz, hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
+    catch { f = new Intl.DateTimeFormat("en-US", { timeZone: "UTC", hourCycle: "h23", year: "numeric", month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit", second: "2-digit" }); }
+    const p = Object.fromEntries(f.formatToParts(now).filter(x => x.type !== "literal").map(x => [x.type, +x.value]));
+    if (p.hour === 24) p.hour = 0;
+    const weekday = new Date(Date.UTC(p.year, p.month - 1, p.day)).getUTCDay();
+    const iso = `${p.year}-${String(p.month).padStart(2, "0")}-${String(p.day).padStart(2, "0")}`;
+    return { ...p, weekday, iso, secondsToMidnight: 86400 - (p.hour * 3600 + p.minute * 60 + p.second) };
+  }
 
-async function loadPacks() {
-  const res = await fetch(`${WORKER_HOST}/api/packs`);
-  const { packs } = await res.json();
-  $("pack").innerHTML = packs.map(p =>
-    `<option value="${p.name}">${p.emoji} ${p.name} — ${p.title}</option>`
-  ).join("");
-}
+  function scriptFor(text, lang) {
+    if (lang === "ko") return "hangul";
+    if (lang === "ja") return "japanese";
+    if (lang === "zh") return "chinese";
+    if (/[가-힣ᄀ-ᇿ]/.test(text)) return "hangul";
+    if (/[぀-ヿ]/.test(text)) return "japanese";
+    if (/[一-鿿]/.test(text)) return "chinese";
+    return "latin";
+  }
 
-function init() {
-  // Timezone dropdown, defaulting to the visitor's own tz.
-  let mine = "UTC";
-  try { mine = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; } catch {}
-  const list = TIMEZONES.includes(mine) ? TIMEZONES : [mine, ...TIMEZONES];
-  $("tz").innerHTML = list.map(t => `<option${t===mine?" selected":""}>${t}</option>`).join("");
+  function graphemes(text) {
+    const t = text.replace(/\s+/g, "");
+    try { return [...new Intl.Segmenter(undefined, { granularity: "grapheme" }).segment(t)].length; }
+    catch { return [...t].length; }
+  }
+  function lengthClass(text) {
+    const n = graphemes(text);
+    return n <= 8 ? "len-xs" : n <= 18 ? "len-sm" : n <= 36 ? "len-md" : "len-lg";
+  }
 
-  // Color swatches.
-  $("swatches").innerHTML = COLORS.map(c =>
-    `<span class="swatch" data-c="${c}" style="background:${c}" role="button" tabindex="0" aria-label="${c}" aria-pressed="${c==='pink'}"></span>`
-  ).join("");
-  $("swatches").addEventListener("click", e => {
-    const c = e.target.getAttribute("data-c"); if (!c) return;
-    $("color").value = c;
-    document.querySelectorAll(".swatch").forEach(s => s.setAttribute("aria-pressed", s.getAttribute("data-c")===c));
-    render();
+  const hex = (c) => c.replace("#", "").toLowerCase();
+  function badgeUrl(s = state) {
+    return `${HOST}/badge.svg?tz=${encodeURIComponent(s.tz)}&pack=${encodeURIComponent(s.pack)}&style=${encodeURIComponent(s.style)}&color=${hex(s.colour)}`;
+  }
+  const snippetFor = (s) => `![Daily Badge](${badgeUrl(s)})`;
+
+  function fmtCountdown(sec) {
+    const h = Math.floor(sec / 3600), m = Math.floor((sec % 3600) / 60), s = sec % 60;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  function say(text) { const el = $("#status"); el.textContent = ""; setTimeout(() => { el.textContent = text; }, 30); }
+
+  // ── Fill a sheet ───────────────────────────────────────────
+  function fillControls(sheet, s) {
+    const tzSel = $('[data-role="tz"]', sheet), packSel = $('[data-role="pack"]', sheet);
+    if (tzSel.options.length !== TIMEZONES.length) tzSel.innerHTML = TIMEZONES.map(t => `<option>${t}</option>`).join("");
+    if (packs.length && packSel.options.length !== packs.length) {
+      packSel.innerHTML = packs.map(p => `<option value="${p.name}">${p.name} — ${p.title}</option>`).join("");
+    }
+    tzSel.value = s.tz; packSel.value = s.pack;
+    $('[data-role="style"]', sheet).value = s.style;
+    $('[data-role="colour"]', sheet).value = s.colour;
+    $('[data-role="colourText"]', sheet).value = s.colour;
+  }
+
+  function fillSheet(sheet, s, today) {
+    const d = localParts(s.tz);
+    $(".rail .wd", sheet).textContent = WD[d.weekday];
+    $(".rail .day", sheet).textContent = d.day;
+    $(".rail .mo", sheet).textContent = MO[d.month - 1];
+    $(".rail time", sheet).setAttribute("datetime", d.iso);
+    $(".pack-label", sheet).textContent = today.pack;
+    const msg = $(".message", sheet);
+    msg.textContent = today.message;
+    const pack = packs.find(p => p.name === today.pack);
+    const script = scriptFor(today.message, pack && pack.lang);
+    msg.dataset.script = script;
+    msg.className = `message ${lengthClass(today.message)}`;
+    msg.lang = script === "hangul" ? "ko" : script === "japanese" ? "ja" : script === "chinese" ? "zh-Hans" : "en";
+    $(".footnote", sheet).textContent = `NEXT SHEET IN ${fmtCountdown(d.secondsToMidnight)}`;
+    fillControls(sheet, s);
+  }
+
+  async function fetchToday(s) {
+    const r = await fetch(`${HOST}/api/today?tz=${encodeURIComponent(s.tz)}&pack=${encodeURIComponent(s.pack)}`);
+    if (!r.ok) throw new Error("api");
+    return r.json();
+  }
+
+  function loadImage(img, src) {
+    return new Promise((resolve) => {
+      let done = false;
+      const finish = () => { if (!done) { done = true; resolve(); } };
+      img.onload = () => (img.decode ? img.decode().then(finish, finish) : finish());
+      img.onerror = finish;
+      img.src = src;
+      setTimeout(finish, 6000); // never wait forever; the tear still happens
+    });
+  }
+
+  // ── The tear ───────────────────────────────────────────────
+  async function change(patch, { announce = true, bust = false } = {}) {
+    if (busy) { pending = { ...(pending || {}), ...patch }; return; }
+    busy = true;
+    const target = { ...state, ...patch };
+    const foot = $(".footnote", current);
+    const slowTimer = setTimeout(() => { foot.textContent = "PREPARING NEXT SHEET"; }, 250);
+    try {
+      const today = await fetchToday(target);
+      fillSheet(next, target, today);
+      let url = badgeUrl(target);
+      if (bust) url += `&_=${today.date}`;
+      const img = $(".badge", next);
+      img.alt = `${today.label}: ${today.message}`;
+      await loadImage(img, url);
+      clearTimeout(slowTimer);
+      Object.assign(state, target);
+      $("#snippet").textContent = snippetFor(state);
+      syncUrl();
+      await tear();
+      if (announce) say(`Badge updated: ${today.message}`);
+    } catch (e) {
+      clearTimeout(slowTimer);
+      foot.textContent = "COULD NOT REACH THE BADGE SERVICE";
+      say("Could not reach the badge service.");
+    } finally {
+      busy = false;
+      if (pending) { const p = pending; pending = null; change(p); }
+    }
+  }
+
+  function tear() {
+    return new Promise((resolve) => {
+      const old = current, fresh = next;
+      fresh.classList.add("staging");
+      fresh.setAttribute("aria-hidden", "false");
+      const finish = () => {
+        old.classList.remove("current", "tearing");
+        old.classList.add("next");
+        old.setAttribute("aria-hidden", "true");
+        fresh.classList.remove("next", "staging", "settling");
+        fresh.classList.add("current");
+        current = fresh; next = old;
+        startCountdown();
+        resolve();
+      };
+      if (reduced.matches) { finish(); return; }
+      old.classList.add("tearing");
+      fresh.classList.add("settling");
+      let n = 0;
+      const onEnd = () => { if (++n === 2) finish(); };
+      old.addEventListener("animationend", onEnd, { once: true });
+      fresh.addEventListener("animationend", onEnd, { once: true });
+      // Safety net if animationend never fires (tab hidden). The motion-review
+      // harness sets __dbHoldTear so it can pause and step the animations.
+      if (!window.__dbHoldTear) setTimeout(() => { if (n < 2) { n = 2; finish(); } }, 800);
+    });
+  }
+
+  // ── Countdown to local midnight ────────────────────────────
+  let tick;
+  function startCountdown() {
+    clearInterval(tick);
+    const foot = $(".footnote", current);
+    const update = () => {
+      const s = localParts(state.tz).secondsToMidnight;
+      if (s >= 86399 || s <= 0) {
+        foot.textContent = "RECEIVING";
+        clearInterval(tick);
+        setTimeout(() => change({}, { announce: true, bust: true }), 1500);
+        return;
+      }
+      foot.textContent = `NEXT SHEET IN ${fmtCountdown(s)}`;
+    };
+    update();
+    tick = setInterval(update, 1000);
+  }
+
+  // ── Wall ───────────────────────────────────────────────────
+  function scriptClass(p) { return scriptFor(p.today, p.lang); }
+  async function loadWall() {
+    const r = await fetch(`${HOST}/api/packs?tz=${encodeURIComponent(state.tz)}`);
+    const data = await r.json();
+    packs = data.packs;
+    $("#wall").innerHTML = packs.map(p => `
+      <li><button type="button" data-pack="${p.name}" aria-pressed="${p.name === state.pack}">
+        <span class="name">${p.name}</span>
+        <span class="text" data-script="${scriptClass(p)}" lang="${p.lang === "zh" ? "zh-Hans" : p.lang}">${escapeHtml(p.today)}</span>
+      </button></li>`).join("");
+    $("#wall-note").textContent = `${data.date} in ${data.tz}. Choose a row to print it.`;
+    $$(".sheet").forEach(sh => fillControls(sh, state));
+  }
+  function escapeHtml(s) { return s.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+  $("#wall").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-pack]"); if (!b) return;
+    $$("#wall button").forEach(x => x.setAttribute("aria-pressed", x === b));
+    change({ pack: b.dataset.pack });
+    $(".stage").scrollIntoView({ behavior: reduced.matches ? "auto" : "smooth", block: "start" });
   });
 
-  ["tz","pack","style","color"].forEach(id => $(id).addEventListener("input", render));
-  $("copy").addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText($("snippet").textContent);
-      const b = $("copy"); b.textContent = "Copied!"; setTimeout(() => b.textContent = "Copy", 1400);
-    } catch {}
+  // ── Controls (delegated, both sheets) ──────────────────────
+  document.addEventListener("change", (e) => {
+    const role = e.target.dataset.role; if (!role) return;
+    if (role === "tz") { change({ tz: e.target.value }).then(loadWall); }
+    if (role === "pack") { change({ pack: e.target.value }); $$("#wall button").forEach(x => x.setAttribute("aria-pressed", x.dataset.pack === e.target.value)); }
+    if (role === "style") change({ style: e.target.value });
+    if (role === "colour") { $$('[data-role="colourText"]').forEach(t => t.value = e.target.value); change({ colour: e.target.value }); }
+  });
+  function commitColourText(input) {
+    const v = input.value.trim().replace(/^#?/, "#").toLowerCase();
+    if (/^#[0-9a-f]{6}$/.test(v)) { if (v !== state.colour) change({ colour: v }); }
+    else input.value = state.colour;
+  }
+  document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.dataset.role === "colourText") { e.preventDefault(); commitColourText(e.target); } });
+  document.addEventListener("focusout", (e) => { if (e.target.dataset && e.target.dataset.role === "colourText") commitColourText(e.target); });
+
+  // ── Copy ───────────────────────────────────────────────────
+  $("#copy").addEventListener("click", async () => {
+    const b = $("#copy");
+    try { await navigator.clipboard.writeText($("#snippet").textContent); } catch {
+      const r = document.createRange(); r.selectNodeContents($("#snippet")); const sel = getSelection(); sel.removeAllRanges(); sel.addRange(r);
+    }
+    b.classList.add("pressed"); setTimeout(() => b.classList.remove("pressed"), 140);
+    b.textContent = "Copied"; say("Markdown copied.");
+    setTimeout(() => { b.textContent = "Copy"; }, 1600);
   });
 
-  render();
-}
+  // ── URL state (shareable customizer links) ─────────────────
+  function readUrl() {
+    const q = new URLSearchParams(location.search);
+    if (q.get("tz")) state.tz = q.get("tz");
+    if (q.get("pack")) state.pack = q.get("pack");
+    if (q.get("style") && ["flat", "flat-square", "plastic", "for-the-badge", "social"].includes(q.get("style"))) state.style = q.get("style");
+    const c = (q.get("color") || "").replace(/^#?/, "#").toLowerCase();
+    if (/^#[0-9a-f]{6}$/.test(c)) state.colour = c;
+  }
+  function syncUrl() {
+    const q = new URLSearchParams({ tz: state.tz, pack: state.pack, style: state.style, color: hex(state.colour) });
+    if (devHost) q.set("host", devHost);
+    history.replaceState(null, "", `?${q}`);
+  }
 
-loadPacks().then(init).catch(() => { init(); $("msgNote").textContent = "Could not load message packs."; });
+  // ── Timezones: the runtime's full list when available ──────
+  const FALLBACK_TZ = ["UTC","Australia/Sydney","Australia/Melbourne","Australia/Perth","Pacific/Auckland","Asia/Seoul","Asia/Tokyo","Asia/Shanghai","Asia/Hong_Kong","Asia/Singapore","Asia/Kolkata","Asia/Dubai","Asia/Jakarta","Europe/London","Europe/Paris","Europe/Berlin","Europe/Madrid","Europe/Rome","Europe/Amsterdam","Europe/Stockholm","Europe/Moscow","Europe/Istanbul","America/New_York","America/Chicago","America/Denver","America/Los_Angeles","America/Toronto","America/Vancouver","America/Mexico_City","America/Sao_Paulo","America/Buenos_Aires","Africa/Johannesburg","Africa/Cairo","Africa/Lagos","Africa/Nairobi"];
+  let TIMEZONES = FALLBACK_TZ;
+  try { const all = Intl.supportedValuesOf("timeZone"); if (all && all.length > 50) TIMEZONES = ["UTC", ...all.filter(t => t !== "UTC")]; } catch {}
+
+  // ── Boot ───────────────────────────────────────────────────
+  async function boot() {
+    try { const mine = Intl.DateTimeFormat().resolvedOptions().timeZone; if (mine && TIMEZONES.includes(mine)) state.tz = mine; } catch {}
+    readUrl();
+    if (!TIMEZONES.includes(state.tz)) TIMEZONES = [state.tz, ...TIMEZONES];
+    $("#snippet").textContent = snippetFor(state);
+    try { await loadWall(); } catch {}
+    // First sheet: fill the current sheet in place (no tear on arrival).
+    try {
+      const today = await fetchToday(state);
+      fillSheet(current, state, today);
+      const img = $(".badge", current);
+      img.alt = `${today.label}: ${today.message}`;
+      await loadImage(img, badgeUrl(state));
+    } catch {
+      $(".message", current).textContent = "Could not reach the badge service.";
+    }
+    fillControls(next, state);
+    syncUrl();
+    startCountdown();
+  }
+  boot();
+})();
 </script>
 </body>
 </html>
