@@ -1,159 +1,184 @@
-import { renderBadge } from "./badge.js";
-import defaultPack from "./packs/default.json";
-import devHumor from "./packs/dev-humor.json";
-import techFacts from "./packs/tech-facts.json";
+// daily-badge Worker — one URL, a fresh message every day, in your timezone.
+//
+//   GET /badge.svg?tz=Australia/Sydney&pack=dev-humor&style=flat&color=pink
+//   GET /badge.json          Shields.io endpoint payload (same params)
+//   GET /api/today           JSON: what the badge would say right now
+//   GET /api/packs           JSON: every pack with today's message
+//   GET /api/packs/:name     JSON: one pack, all messages
+//   GET /health
+//
+// Everything is computed at the edge from the request time; there is no
+// storage and nothing about the viewer is recorded.
+import { renderBadge, STYLES } from "./render/shields.js";
+import { normalizeTimeZone, localNow, parseIsoDate, secondsUntilLocalMidnight } from "./date.js";
+import { PACKS, FALLBACK_MESSAGE, messageFromPack, pickBuiltin, listPacks } from "./packs/index.js";
+import { remotePackUrl, fetchRemotePack } from "./remote.js";
 
-// ─── Packs ─────────────────────────────────────────────────────
-// A pack is either an object keyed by "Month Day" (date-specific) or an
-// array (rotated by day-of-year, so it stays fresh without 366 entries).
-const PACKS = {
-  default: defaultPack,
-  "dev-humor": devHumor,
-  "tech-facts": techFacts,
-};
-
-// ─── Config ────────────────────────────────────────────────────
-const FALLBACK_MESSAGE = "You're amazing!";
+export const LANDING_URL = "https://in-c0.github.io/daily-badge/";
 const DEFAULT_LABEL = "Today is ...";
 const DEFAULT_COLOR = "pink";
 const DEFAULT_STYLE = "for-the-badge";
-const ALLOWED_STYLES = new Set([
-  "flat",
-  "flat-square",
-  "plastic",
-  "for-the-badge",
-  "social",
-]);
-const DAY = 86400;
+const STYLE_SET = new Set(STYLES);
+const VERSION = "2.0.0";
 
-// ─── Date helpers (ICU tz DB is built into Workers — no pytz needed) ──
-function todayKey(tz) {
-  try {
-    return new Intl.DateTimeFormat("en-US", {
-      timeZone: tz,
-      month: "long",
-      day: "numeric",
-    }).format(new Date());
-  } catch {
-    return new Intl.DateTimeFormat("en-US", {
-      timeZone: "UTC",
-      month: "long",
-      day: "numeric",
-    }).format(new Date());
+const clamp = (v, max) => (typeof v === "string" ? v.slice(0, max) : "");
+
+/** Read and sanitise query params. Public endpoint: trust nothing. */
+export function readParams(url) {
+  const p = url.searchParams;
+  const style = p.get("style") || DEFAULT_STYLE;
+  return {
+    tz: normalizeTimeZone(clamp(p.get("tz") || "UTC", 64)),
+    pack: clamp(p.get("pack") || "default", 300),
+    date: parseIsoDate(p.get("date")),
+    label: p.has("label") ? clamp(p.get("label"), 40) : DEFAULT_LABEL,
+    color: clamp(p.get("color") || DEFAULT_COLOR, 32),
+    labelColor: clamp(p.get("labelColor") || p.get("labelcolor") || "", 32) || undefined,
+    style: STYLE_SET.has(style) ? style : DEFAULT_STYLE,
+    seed: clamp(p.get("seed") || "", 64),
+    to: clamp(p.get("to") || "", 10),
+    event: clamp(p.get("event") || "", 40),
+  };
+}
+
+/**
+ * Work out today's message for a request. Pure apart from remote fetches.
+ * @returns {{message:string, packName:string, date:object, error?:string}}
+ */
+export async function resolveMessage(params, { now = new Date(), fetcher = fetch } = {}) {
+  const date = params.date || localNow(params.tz, now);
+  const remoteUrl = remotePackUrl(params.pack);
+  if (remoteUrl) {
+    const pack = await fetchRemotePack(remoteUrl, fetcher);
+    if (!pack) return { message: "pack unavailable", packName: params.pack, date, error: "remote_pack_unavailable" };
+    return { message: messageFromPack(pack, date, params), packName: params.pack, date };
   }
+  const pack = pickBuiltin(params.pack, date) || PACKS.default;
+  return { message: messageFromPack(pack, date, params) || FALLBACK_MESSAGE, packName: pack.name, date };
 }
 
-function dayOfYear(tz) {
-  let iso;
-  try {
-    // en-CA renders as YYYY-MM-DD.
-    iso = new Intl.DateTimeFormat("en-CA", {
-      timeZone: tz,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date());
-  } catch {
-    iso = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "UTC",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date());
+function cacheHeaders(params, now, error) {
+  // A fixed preview date never changes; an error should be retried soon;
+  // otherwise hold the badge until the viewer's local midnight.
+  const maxAge = error ? 300 : params.date ? 86400 : secondsUntilLocalMidnight(params.tz, now);
+  return {
+    "cache-control": `public, max-age=${maxAge}, s-maxage=${maxAge}`,
+    "access-control-allow-origin": "*",
+    "x-daily-badge-version": VERSION,
+  };
+}
+
+const json = (obj, headers = {}, status = 200) =>
+  new Response(JSON.stringify(obj), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8", "access-control-allow-origin": "*", ...headers },
+  });
+
+/** Main handler — exported so tests can call it without wrangler. */
+export async function handle(request, opts = {}) {
+  const now = opts.now || new Date();
+  const url = new URL(request.url);
+  const path = url.pathname.replace(/\/+$/, "") || "/";
+  const params = readParams(url);
+
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    return new Response("Method not allowed", { status: 405, headers: { allow: "GET, HEAD" } });
   }
-  const [y, m, d] = iso.split("-").map(Number);
-  return Math.floor((Date.UTC(y, m - 1, d) - Date.UTC(y, 0, 0)) / (DAY * 1000));
-}
 
-function messageFor(packName, tz) {
-  const pack = PACKS[packName] || PACKS.default;
-  if (Array.isArray(pack)) {
-    return pack[(dayOfYear(tz) - 1) % pack.length];
+  if (path === "/health") {
+    return json({ ok: true, version: VERSION, packs: Object.keys(PACKS).length, now: now.toISOString() });
   }
-  return pack[todayKey(tz)] || FALLBACK_MESSAGE;
-}
 
-function secondsUntilLocalMidnight(tz) {
-  let parts;
-  try {
-    parts = new Intl.DateTimeFormat("en-US", {
-      timeZone: tz,
-      hourCycle: "h23",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit",
-    }).formatToParts(new Date());
-  } catch {
-    return DAY; // unknown tz → cache a day
+  if (path === "/api/packs") {
+    const date = params.date || localNow(params.tz, now);
+    return json({ date: date.iso, tz: params.tz, packs: listPacks(date) }, cacheHeaders(params, now));
   }
-  const get = (t) => parseInt(parts.find((p) => p.type === t).value, 10);
-  let h = get("hour");
-  if (h === 24) h = 0; // some ICU builds emit 24 at midnight
-  const elapsed = h * 3600 + get("minute") * 60 + get("second");
-  // Clamp: never below 60s (avoid thundering herd), never above a day.
-  return Math.min(DAY, Math.max(60, DAY - elapsed));
-}
 
-// ─── Param sanitation (public endpoint — validate everything) ──
-function clamp(str, max) {
-  return String(str).slice(0, max);
-}
+  if (path.startsWith("/api/packs/")) {
+    const name = decodeURIComponent(path.slice("/api/packs/".length)).toLowerCase();
+    const pack = PACKS[name];
+    if (!pack) return json({ error: "unknown_pack", name }, {}, 404);
+    const { fn, ...meta } = pack;
+    return json(meta, { "cache-control": "public, max-age=86400" });
+  }
 
-// ─── Handler ───────────────────────────────────────────────────
-export default {
-  async fetch(request) {
-    const url = new URL(request.url);
-    const p = url.searchParams;
+  if (path === "/api/today") {
+    const r = await resolveMessage(params, { now, fetcher: opts.fetcher });
+    return json(
+      {
+        date: r.date.iso,
+        weekday: r.date.weekdayName,
+        dayOfYear: r.date.doy,
+        tz: params.tz,
+        pack: r.packName,
+        label: params.label,
+        message: r.message,
+        ...(r.error ? { error: r.error } : {}),
+      },
+      cacheHeaders(params, now, r.error)
+    );
+  }
 
-    const tz = clamp(p.get("tz") || "UTC", 64);
-    const label = clamp(p.get("label") || DEFAULT_LABEL, 40);
-    const color = clamp(p.get("color") || DEFAULT_COLOR, 20);
-    const pack = clamp(p.get("pack") || "default", 32);
-    let style = p.get("style") || DEFAULT_STYLE;
-    if (!ALLOWED_STYLES.has(style)) style = DEFAULT_STYLE;
+  if (path === "/badge.json") {
+    const r = await resolveMessage(params, { now, fetcher: opts.fetcher });
+    const headers = cacheHeaders(params, now, r.error);
+    const maxAge = Number(headers["cache-control"].match(/max-age=(\d+)/)[1]);
+    return json(
+      {
+        schemaVersion: 1,
+        label: params.label,
+        message: r.message,
+        color: r.error ? "red" : params.color,
+        ...(params.labelColor ? { labelColor: params.labelColor } : {}),
+        style: params.style,
+        cacheSeconds: Math.max(300, maxAge),
+        ...(r.error ? { isError: true } : {}),
+      },
+      headers
+    );
+  }
 
-    const message = messageFor(pack, tz);
-    const maxAge = secondsUntilLocalMidnight(tz);
-    const cache = `public, max-age=${maxAge}`;
-
-    if (url.pathname === "/badge.json") {
-      // Shields.io endpoint-compatible payload.
-      return new Response(
-        JSON.stringify({ schemaVersion: 1, label, message, color }),
-        {
-          headers: {
-            "content-type": "application/json; charset=utf-8",
-            "cache-control": cache,
-            "access-control-allow-origin": "*",
-          },
-        }
-      );
-    }
-
-    if (url.pathname === "/badge.svg" || url.pathname === "/") {
-      let svg;
-      try {
-        svg = renderBadge({ label, message, color, style });
-      } catch {
-        svg = renderBadge({
-          label: DEFAULT_LABEL,
-          message,
-          color: DEFAULT_COLOR,
-          style: DEFAULT_STYLE,
-        });
-      }
-      return new Response(svg, {
-        headers: {
-          "content-type": "image/svg+xml; charset=utf-8",
-          "cache-control": cache,
-          "access-control-allow-origin": "*",
-        },
+  const wantsBadge = path === "/badge.svg" || path === "/badge" || (path === "/" && url.search.length > 1);
+  if (wantsBadge) {
+    const r = await resolveMessage(params, { now, fetcher: opts.fetcher });
+    let svg;
+    try {
+      svg = renderBadge({
+        label: params.label,
+        message: r.message,
+        color: r.error ? "red" : params.color,
+        labelColor: params.labelColor,
+        style: params.style,
       });
+    } catch {
+      svg = renderBadge({ label: DEFAULT_LABEL, message: r.message, color: DEFAULT_COLOR, style: DEFAULT_STYLE });
     }
-
-    return new Response("Not found\nTry /badge.svg?tz=Australia/Sydney", {
-      status: 404,
-      headers: { "content-type": "text/plain; charset=utf-8" },
+    return new Response(svg, {
+      headers: {
+        "content-type": "image/svg+xml; charset=utf-8",
+        "x-daily-badge-pack": r.packName,
+        "x-daily-badge-date": r.date.iso,
+        ...cacheHeaders(params, now, r.error),
+      },
     });
+  }
+
+  if (path === "/") {
+    return Response.redirect(LANDING_URL, 302);
+  }
+
+  if (path === "/robots.txt") {
+    return new Response("User-agent: *\nAllow: /\n", { headers: { "content-type": "text/plain" } });
+  }
+
+  return new Response(`Not found.\nTry /badge.svg?tz=Australia/Sydney&pack=dev-humor\nDocs: ${LANDING_URL}\n`, {
+    status: 404,
+    headers: { "content-type": "text/plain; charset=utf-8" },
+  });
+}
+
+export default {
+  fetch(request) {
+    return handle(request);
   },
 };

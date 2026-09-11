@@ -2,5 +2,11 @@ name = "daily-badge"
 main = "src/index.js"
 compatibility_date = "2024-11-01"
 
+# Free tier is plenty: every response carries max-age until the viewer's local
+# midnight, so the edge cache absorbs almost all traffic.
+[observability]
+enabled = true
+
 # Deploy:  cd worker && npm install && npx wrangler login && npx wrangler deploy
 # Local:   cd worker && npm install && npx wrangler dev
+# Tests:   cd worker && npm test

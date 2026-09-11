@@ -1,12 +1,15 @@
 {
   "name": "daily-badge-worker",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
-    "gif": "node make-gif.mjs"
+    "test": "node --test \"test/*.test.js\"",
+    "build:widths": "node scripts/build-widths.mjs",
+    "gif": "node make-gif.mjs",
+    "check": "wrangler deploy --dry-run --outdir dist"
   },
   "devDependencies": {
     "badge-maker": "^4.1.0",
