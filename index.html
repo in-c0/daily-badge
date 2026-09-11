@@ -238,15 +238,32 @@
   }
 
   /* ── Motion (the tear) ────────────────────────────────────── */
+  /* The seam (clip edge) has its own keyframed timing so it crosses the
+     message band in ~30ms instead of lingering through it (review 1, PIVOT). */
+  @property --seam { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+  .sheet { position: relative; }
   .sheet.current.tearing {
-    animation: tear 280ms var(--ease-exit) forwards;
+    animation: tear 280ms var(--ease-exit) forwards, seam 280ms linear forwards;
+    clip-path: inset(0 0 var(--seam) 0);
+  }
+  .sheet.current.tearing::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 1px;
+    bottom: var(--seam); background: var(--ink); pointer-events: none;
   }
   .sheet.next.settling {
     animation: settle 320ms var(--ease-settle) 70ms both;
   }
   @keyframes tear {
-    from { transform: translateY(0) rotate(0deg); clip-path: inset(0 0 0 0); }
-    to   { transform: translateY(-44px) rotate(-.35deg); clip-path: inset(0 0 100% 0); }
+    from { transform: translateY(0) rotate(0deg); }
+    to   { transform: translateY(-44px) rotate(-.35deg); }
+  }
+  @keyframes seam {
+    0%    { --seam: 0%;   animation-timing-function: cubic-bezier(.42, 0, .78, .28); }
+    25%   { --seam: 8%;   animation-timing-function: cubic-bezier(.42, 0, .78, .28); }  /* 70ms */
+    64.3% { --seam: 30%;  animation-timing-function: cubic-bezier(.20, .75, .30, 1); }  /* 180ms */
+    75%   { --seam: 82%;  animation-timing-function: cubic-bezier(.16, 1, .30, 1); }    /* 210ms */
+    85.7% { --seam: 94%;  animation-timing-function: cubic-bezier(.16, 1, .30, 1); }    /* 240ms */
+    100%  { --seam: 100%; }
   }
   @keyframes settle {
     from { transform: translateY(6px); }
@@ -540,9 +557,9 @@
       old.classList.add("tearing");
       fresh.classList.add("settling");
       let n = 0;
-      const onEnd = () => { if (++n === 2) finish(); };
-      old.addEventListener("animationend", onEnd, { once: true });
-      fresh.addEventListener("animationend", onEnd, { once: true });
+      const onEnd = (e) => { if (e.animationName === "tear" || e.animationName === "settle") { if (++n === 2) finish(); } };
+      old.addEventListener("animationend", onEnd);
+      fresh.addEventListener("animationend", onEnd);
       // Safety net if animationend never fires (tab hidden). The motion-review
       // harness sets __dbHoldTear so it can pause and step the animations.
       if (!window.__dbHoldTear) setTimeout(() => { if (n < 2) { n = 2; finish(); } }, 800);

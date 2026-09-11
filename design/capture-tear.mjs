@@ -4,7 +4,7 @@ import { writeFileSync } from 'node:fs'
 import sharp from '../worker/node_modules/sharp/lib/index.js'
 const [,, url, out = 'design/motion/tear'] = process.argv
 const sleep = (ms) => new Promise(r => setTimeout(r, ms))
-const TIMES = [0, 20, 40, 60, 80, 100, 140, 180, 220, 260, 280, 300, 320, 360, 390, 450]
+const TIMES = [0, 70, 140, 180, 190, 200, 210, 220, 230, 240, 250, 260, 280, 320, 390, 450]
 const edge = await launchEdge()
 try {
   const tab = await edge.newTab()
