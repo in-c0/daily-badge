@@ -1,5 +1,5 @@
 name: "Daily Badge — message in your README"
-description: "Write today's message (fun day, dev humour, Stoic line, moon phase, countdown…) into your profile README as real text. No image proxy, no fork."
+description: "Write today's message (fun day, dev humour, Stoic line, moon phase, countdown) into your README as real text."
 author: in-c0
 branding:
   icon: sun
