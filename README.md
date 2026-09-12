@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/in-c0/daily-badge/actions/workflows/tests.yml/badge.svg)](https://github.com/in-c0/daily-badge/actions/workflows/tests.yml)
 [![Deploy Worker](https://github.com/in-c0/daily-badge/actions/workflows/worker-deploy.yml/badge.svg)](https://github.com/in-c0/daily-badge/actions/workflows/worker-deploy.yml)
+[![VS Code Marketplace](https://img.shields.io/badge/VS%20Code-Install-007ACC?logo=visualstudiocode&logoColor=white)](https://marketplace.visualstudio.com/items?itemName=in-c0.daily-badge)
 
 **One URL. A new message on your GitHub profile every day, in your timezone.**
 Fun days, dev humour, Stoic lines, science, the moon phase, a countdown, or your
@@ -58,7 +59,7 @@ Put a JSON file in any public repo or gist and point the badge at it:
 An array rotates by day of year; an object keyed by `"Month Day"` is date-specific.
 Details and limits in [`worker/README.md`](worker/README.md#bring-your-own-pack-no-pr-needed).
 
-## Three ways to use it
+## Four ways to use it
 
 ### 1. The URL (recommended)
 
@@ -117,6 +118,16 @@ Python, nothing to install. Messages live in [`What_Day_365.csv`](What_Day_365.c
 ![Daily Badge](https://img.shields.io/endpoint?url=https://YOUR-USER.github.io/daily-badge/badge.json&style=for-the-badge)
 ```
 
+### 4. In your editor (VS Code)
+
+The **[Daily Badge VS Code extension](https://marketplace.visualstudio.com/items?itemName=in-c0.daily-badge)**
+puts today's message in your status bar, refreshed at your local midnight — same
+packs, same Worker. Source in [`vscode-extension/`](vscode-extension/).
+
+```
+ext install in-c0.daily-badge
+```
+
 ## How it works
 
 - **Worker** ([`worker/`](worker/)) — a Cloudflare Worker with no runtime
@@ -125,7 +136,7 @@ Python, nothing to install. Messages live in [`What_Day_365.csv`](What_Day_365.c
   time, with explicit rules for CJK and emoji. Every response carries
   `Cache-Control: max-age=<seconds until the viewer's local midnight>`, so the
   edge absorbs nearly all traffic and the free tier is plenty.
-- **Tests** — 46 cases run without wrangler, including a geometry comparison
+- **Tests** — 47 cases run without wrangler, including a geometry comparison
   against `badge-maker` for all five styles, and a render of every message in
   every pack on every day of the year.
 - **Privacy** — nothing is stored; there are no cookies, no analytics, no logs
