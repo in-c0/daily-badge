@@ -7,10 +7,10 @@
 <meta name="description" content="One URL gives your GitHub profile a badge whose message changes every day in your timezone. Pick a pack, a style, a colour, copy the line." />
 <meta property="og:title" content="daily-badge" />
 <meta property="og:description" content="A new message on your GitHub profile every day, in your timezone. 21 packs, 8 languages, or your own list." />
-<meta property="og:image" content="https://daily-badge.wldud5192.workers.dev/badge.svg?tz=UTC" />
+<meta property="og:image" content="https://badge.ava.kim/badge.svg?tz=UTC" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="preconnect" href="https://daily-badge.wldud5192.workers.dev" />
+<link rel="preconnect" href="https://badge.ava.kim" />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+KR:wght@600&family=Noto+Serif+JP:wght@600&family=Noto+Serif+SC:wght@600&display=swap" rel="stylesheet" />
 <style>
   /* ── Tokens (design/DESIGN.md · Paper Midnight) ───────────── */
@@ -283,7 +283,7 @@
     <span>daily-badge</span>
     <nav aria-label="Project links">
       <a href="https://github.com/in-c0/daily-badge">Source</a>
-      <a href="https://daily-badge.wldud5192.workers.dev/api/packs">API</a>
+      <a href="https://badge.ava.kim/api/packs">API</a>
     </nav>
   </header>
 
@@ -295,7 +295,7 @@
       <div class="body">
         <div class="pack-label">default</div>
         <div class="badge-slot">
-          <img class="badge" alt="Today's badge" src="https://daily-badge.wldud5192.workers.dev/badge.svg?tz=UTC" />
+          <img class="badge" alt="Today's badge" src="https://badge.ava.kim/badge.svg?tz=UTC" />
         </div>
         <p class="message len-md" data-script="latin">Loading today's message…</p>
         <div class="footnote">NEXT SHEET IN —</div>
@@ -350,7 +350,7 @@
   </section>
 
   <div class="md-strip">
-    <code id="snippet">![Daily Badge](https://daily-badge.wldud5192.workers.dev/badge.svg?tz=UTC)</code>
+    <code id="snippet">![Daily Badge](https://badge.ava.kim/badge.svg?tz=UTC)</code>
     <button type="button" class="copy" id="copy">Copy</button>
   </div>
   <div class="visually-hidden" role="status" aria-live="polite" id="status"></div>
@@ -388,8 +388,8 @@
 
   <footer class="end">
     <a href="https://github.com/in-c0/daily-badge">github.com/in-c0/daily-badge</a>
-    <a href="https://daily-badge.wldud5192.workers.dev/api/packs">/api/packs</a>
-    <a href="https://daily-badge.wldud5192.workers.dev/api/today">/api/today</a>
+    <a href="https://badge.ava.kim/api/packs">/api/packs</a>
+    <a href="https://badge.ava.kim/api/today">/api/today</a>
     <a href="https://github.com/in-c0/daily-badge/blob/main/worker/README.md">parameters</a>
   </footer>
 </div>
@@ -398,7 +398,7 @@
 (() => {
   // Dev only: ?host=http://127.0.0.1:8787 points the page at a local `wrangler dev`.
   const devHost = new URLSearchParams(location.search).get("host") || "";
-  const HOST = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(devHost) ? devHost : "https://daily-badge.wldud5192.workers.dev";
+  const HOST = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(devHost) ? devHost : "https://badge.ava.kim";
   const $ = (sel, root = document) => root.querySelector(sel);
   const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");

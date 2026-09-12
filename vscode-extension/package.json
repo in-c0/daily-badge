@@ -116,7 +116,7 @@
         },
         "dailyBadge.endpoint": {
           "type": "string",
-          "default": "https://daily-badge.wldud5192.workers.dev",
+          "default": "https://badge.ava.kim",
           "description": "Daily Badge Worker endpoint. Point this at your own deployment if you self-host."
         },
         "dailyBadge.alignment": {

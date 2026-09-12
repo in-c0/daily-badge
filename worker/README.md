@@ -1,10 +1,11 @@
 # daily-badge Worker
 
 The zero-fork version. Adopters paste **one URL** — no fork, no Actions, no
-per-user infra. Live at `https://daily-badge.wldud5192.workers.dev`.
+per-user infra. Live at `https://badge.ava.kim` (the original
+`https://daily-badge.wldud5192.workers.dev` keeps working).
 
 ```markdown
-![Daily Badge](https://daily-badge.wldud5192.workers.dev/badge.svg?tz=Australia/Sydney&pack=dev-humor)
+![Daily Badge](https://badge.ava.kim/badge.svg?tz=Australia/Sydney&pack=dev-humor)
 ```
 
 ## Endpoints
