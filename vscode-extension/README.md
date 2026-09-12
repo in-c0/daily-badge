@@ -12,7 +12,7 @@ editor and your profile stay in sync.
 ## Features
 
 - A ✨ message in the status bar, updated automatically at your local midnight.
-- Three packs: **default** (on-this-day fun), **dev-humor**, **tech-facts**.
+- 21 packs: on-this-day, dev humour, tech facts, motivation, Stoic, science, space, wholesome, productivity, puns, Korean, Japanese, Chinese, Spanish, French, German, Portuguese, moon phase, weekday, year progress, countdown.
 - Click it to open the [customizer](https://in-c0.github.io/daily-badge/).
 - Commands: **Daily Badge: Refresh**, **Cycle Pack**, **Open Customizer**.
 
@@ -20,7 +20,7 @@ editor and your profile stay in sync.
 
 | Setting | Default | Description |
 |---------|---------|-------------|
-| `dailyBadge.pack` | `default` | `default` · `dev-humor` · `tech-facts` |
+| `dailyBadge.pack` | `default` | any of the 21 packs — see the enum in settings |
 | `dailyBadge.timezone` | *(system)* | IANA tz, e.g. `Australia/Sydney`. Empty = your system tz. |
 | `dailyBadge.endpoint` | Worker URL | Point at your own deployment if self-hosting. |
 | `dailyBadge.alignment` | `right` | Status bar side. |

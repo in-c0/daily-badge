@@ -2,35 +2,109 @@
   "name": "daily-badge",
   "displayName": "Daily Badge",
   "description": "A new quirky message in your status bar every day — on-this-day facts, dev humor, or tech trivia, in your timezone.",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "publisher": "in-c0",
-  "engines": { "vscode": "^1.75.0" },
-  "categories": ["Other"],
-  "keywords": ["daily", "status bar", "fun", "motivation", "dev humor", "trivia", "on this day", "quotes", "welcome", "productivity"],
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "daily",
+    "status bar",
+    "fun",
+    "motivation",
+    "dev humor",
+    "trivia",
+    "on this day",
+    "quotes",
+    "welcome",
+    "productivity"
+  ],
   "icon": "icon.png",
-  "galleryBanner": { "color": "#ff4d97", "theme": "dark" },
-  "repository": { "type": "git", "url": "https://github.com/in-c0/daily-badge" },
-  "bugs": { "url": "https://github.com/in-c0/daily-badge/issues" },
+  "galleryBanner": {
+    "color": "#ff4d97",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/in-c0/daily-badge"
+  },
+  "bugs": {
+    "url": "https://github.com/in-c0/daily-badge/issues"
+  },
   "homepage": "https://in-c0.github.io/daily-badge/",
   "license": "MIT",
-  "activationEvents": ["onStartupFinished"],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
-      { "command": "dailyBadge.refresh", "title": "Daily Badge: Refresh" },
-      { "command": "dailyBadge.cyclePack", "title": "Daily Badge: Cycle Pack" },
-      { "command": "dailyBadge.openCustomizer", "title": "Daily Badge: Open Customizer" }
+      {
+        "command": "dailyBadge.refresh",
+        "title": "Daily Badge: Refresh"
+      },
+      {
+        "command": "dailyBadge.cyclePack",
+        "title": "Daily Badge: Cycle Pack"
+      },
+      {
+        "command": "dailyBadge.openCustomizer",
+        "title": "Daily Badge: Open Customizer"
+      }
     ],
     "configuration": {
       "title": "Daily Badge",
       "properties": {
         "dailyBadge.pack": {
           "type": "string",
-          "enum": ["default", "dev-humor", "tech-facts"],
+          "enum": [
+            "default",
+            "dev-humor",
+            "tech-facts",
+            "motivation",
+            "stoic",
+            "science",
+            "space",
+            "wholesome",
+            "productivity",
+            "puns",
+            "ko",
+            "ja",
+            "zh",
+            "es",
+            "fr",
+            "de",
+            "pt",
+            "moon",
+            "weekday",
+            "year",
+            "countdown"
+          ],
           "enumDescriptions": [
             "A curated on-this-day message for every calendar day",
             "A rotating dose of developer comedy",
-            "A daily piece of computing trivia"
+            "A daily piece of computing trivia",
+            "A short push for the day",
+            "Marcus, Seneca, Epictetus",
+            "A checkable science fact",
+            "Beyond the atmosphere",
+            "Kind words",
+            "One practical tip",
+            "You've been warned",
+            "Korean",
+            "Japanese",
+            "Chinese",
+            "Spanish",
+            "French",
+            "German",
+            "Portuguese",
+            "Tonight's moon phase and illumination",
+            "A different mood for each weekday",
+            "Progress bar through the year",
+            "Days until New Year (set to/event via the Worker URL)"
           ],
           "default": "default",
           "description": "Which message pack to show."
@@ -47,7 +121,10 @@
         },
         "dailyBadge.alignment": {
           "type": "string",
-          "enum": ["left", "right"],
+          "enum": [
+            "left",
+            "right"
+          ],
           "default": "right",
           "description": "Status bar alignment (requires reload if changed while running)."
         },
