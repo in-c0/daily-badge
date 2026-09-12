@@ -2,6 +2,13 @@ name = "daily-badge"
 main = "src/index.js"
 compatibility_date = "2024-11-01"
 
+# Custom domain (zone ava.kim is on this Cloudflare account). `wrangler deploy`
+# creates the DNS record and certificate itself. The workers.dev hostname keeps
+# working, so existing badge URLs never break.
+[[routes]]
+pattern = "badge.ava.kim"
+custom_domain = true
+
 # Free tier is plenty: every response carries max-age until the viewer's local
 # midnight, so the edge cache absorbs almost all traffic.
 [observability]

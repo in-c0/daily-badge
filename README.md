@@ -11,7 +11,7 @@ own list — 21 packs in 8 languages, rendered at the edge, free, no sign-up.
 ![Daily Badge cycling through the year](assets/daily-badge-demo.gif)
 
 ```markdown
-![Daily Badge](https://daily-badge.wldud5192.workers.dev/badge.svg?tz=Australia/Sydney)
+![Daily Badge](https://badge.ava.kim/badge.svg?tz=Australia/Sydney)
 ```
 
 **🎨 [Open the customizer →](https://in-c0.github.io/daily-badge/)** — pick your
@@ -21,17 +21,17 @@ timezone, pack, style and colour with a live preview, then copy the snippet.
 
 | | |
 |---|---|
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?tz=Australia/Sydney) | `pack=default` — a curated "on this day" for all 366 days |
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=dev-humor&style=flat) | `pack=dev-humor&style=flat` |
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=tech-facts&style=flat-square&color=blue) | `pack=tech-facts&style=flat-square&color=blue` |
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=stoic&style=plastic&color=555&label=stoa) | `pack=stoic&style=plastic&label=stoa` |
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=space&style=social&label=space) | `pack=space&style=social` |
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=moon&style=flat&color=midnightblue&label=tonight) | `pack=moon` — phase + illumination, computed |
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=year&style=flat-square&color=teal&label=2026) | `pack=year` — progress bar through the year |
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=countdown&to=12-25&event=Christmas&color=green) | `pack=countdown&to=12-25&event=Christmas` |
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=weekday&style=flat&color=gold) | `pack=weekday` — Monday ≠ Friday |
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=ko&tz=Asia/Seoul&style=flat&color=hotpink&label=오늘) | `pack=ko&tz=Asia/Seoul` — also `ja` `zh` `es` `fr` `de` `pt` |
-| ![](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=wholesome&label=psst&color=lavender) | `pack=wholesome&label=psst` |
+| ![](https://badge.ava.kim/badge.svg?tz=Australia/Sydney) | `pack=default` — a curated "on this day" for all 366 days |
+| ![](https://badge.ava.kim/badge.svg?pack=dev-humor&style=flat) | `pack=dev-humor&style=flat` |
+| ![](https://badge.ava.kim/badge.svg?pack=tech-facts&style=flat-square&color=blue) | `pack=tech-facts&style=flat-square&color=blue` |
+| ![](https://badge.ava.kim/badge.svg?pack=stoic&style=plastic&color=555&label=stoa) | `pack=stoic&style=plastic&label=stoa` |
+| ![](https://badge.ava.kim/badge.svg?pack=space&style=social&label=space) | `pack=space&style=social` |
+| ![](https://badge.ava.kim/badge.svg?pack=moon&style=flat&color=midnightblue&label=tonight) | `pack=moon` — phase + illumination, computed |
+| ![](https://badge.ava.kim/badge.svg?pack=year&style=flat-square&color=teal&label=2026) | `pack=year` — progress bar through the year |
+| ![](https://badge.ava.kim/badge.svg?pack=countdown&to=12-25&event=Christmas&color=green) | `pack=countdown&to=12-25&event=Christmas` |
+| ![](https://badge.ava.kim/badge.svg?pack=weekday&style=flat&color=gold) | `pack=weekday` — Monday ≠ Friday |
+| ![](https://badge.ava.kim/badge.svg?pack=ko&tz=Asia/Seoul&style=flat&color=hotpink&label=오늘) | `pack=ko&tz=Asia/Seoul` — also `ja` `zh` `es` `fr` `de` `pt` |
+| ![](https://badge.ava.kim/badge.svg?pack=wholesome&label=psst&color=lavender) | `pack=wholesome&label=psst` |
 
 ## Packs
 
@@ -49,7 +49,7 @@ line as everyone else's. Full parameter reference: [`worker/README.md`](worker/R
 Put a JSON file in any public repo or gist and point the badge at it:
 
 ```markdown
-![Daily Badge](https://daily-badge.wldud5192.workers.dev/badge.svg?pack=gh:YOUR-USER/YOUR-REPO/messages.json)
+![Daily Badge](https://badge.ava.kim/badge.svg?pack=gh:YOUR-USER/YOUR-REPO/messages.json)
 ```
 
 ```json
@@ -71,7 +71,7 @@ third service.
 Prefer Shields' own renderer? The same endpoint speaks its protocol:
 
 ```markdown
-![Daily Badge](https://img.shields.io/endpoint?url=https://daily-badge.wldud5192.workers.dev/badge.json%3Ftz%3DAsia/Seoul%26pack%3Dko&style=for-the-badge)
+![Daily Badge](https://img.shields.io/endpoint?url=https://badge.ava.kim/badge.json%3Ftz%3DAsia/Seoul%26pack%3Dko&style=for-the-badge)
 ```
 
 ### 2. As text in your README (GitHub Action)

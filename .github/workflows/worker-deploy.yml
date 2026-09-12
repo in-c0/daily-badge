@@ -46,7 +46,7 @@ jobs:
         if: steps.token.outputs.present == 'true'
         run: |
           set -e
-          url="https://daily-badge.wldud5192.workers.dev"
+          url="https://badge.ava.kim"
           curl -fsS "$url/health" | grep -q '"ok":true'
           curl -fsS "$url/badge.svg?tz=Australia/Sydney&pack=dev-humor" | grep -q '<svg'
           curl -fsS "$url/badge.json" | grep -q '"schemaVersion":1'
