@@ -1,2 +1,3 @@
-pandas
-pytz
+# The fork path is standard-library only (csv + zoneinfo, Python 3.9+).
+# Nothing to install. tzdata is only needed on platforms without a system tz database:
+tzdata; sys_platform == "win32"

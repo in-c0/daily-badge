@@ -1,8 +1,13 @@
-import pandas as pd
-from datetime import datetime
+"""Fork path: write badge.json for today in your timezone.
+
+Standard library only (csv + zoneinfo) so the daily GitHub Action installs
+nothing and cannot break on a dependency. Run: python generate_badge.py
+"""
+import csv
 import json
-import pytz
 import os
+from datetime import datetime
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 # ─── Config ────────────────────────────────────────────────────
 DEFAULT_TZ = "UTC"
@@ -17,23 +22,21 @@ def load_timezone(path=TIMEZONE_PATH):
     if os.path.exists(path):
         try:
             with open(path, "r", encoding="utf-8") as f:
-                return pytz.timezone(f.read().strip())
-        except Exception:
-            return pytz.timezone(DEFAULT_TZ)
-    return pytz.timezone(DEFAULT_TZ)
+                return ZoneInfo(f.read().strip())
+        except (ZoneInfoNotFoundError, ValueError, OSError):
+            return ZoneInfo(DEFAULT_TZ)
+    return ZoneInfo(DEFAULT_TZ)
 
 
 def load_messages(path=CSV_PATH):
-    """Load the day→message table."""
-    return pd.read_csv(path)
+    """Load the day→message table as a dict keyed by 'Month Day'."""
+    with open(path, newline="", encoding="utf-8") as f:
+        return {row["Day"].strip(): row["Message"].strip() for row in csv.DictReader(f)}
 
 
-def get_message(df, month, day):
+def get_message(messages, month, day):
     """Return the message for a given month name + day, or a fallback."""
-    matches = df[df["Day"] == f"{month} {day}"]["Message"].values
-    if len(matches):
-        return matches[0]
-    return FALLBACK_MESSAGE
+    return messages.get(f"{month} {day}", FALLBACK_MESSAGE)
 
 
 def build_badge(message):
@@ -49,8 +52,8 @@ def build_badge(message):
 def main():
     tz = load_timezone()
     today = datetime.now(tz)
-    df = load_messages()
-    message = get_message(df, today.strftime("%B"), today.day)
+    messages = load_messages()
+    message = get_message(messages, today.strftime("%B"), today.day)
     badge = build_badge(message)
 
     with open(BADGE_PATH, "w", encoding="utf-8") as f:

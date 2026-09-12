@@ -1,7 +1,7 @@
 const vscode = require("vscode");
 const https = require("https");
 
-const PACKS = ["default", "dev-humor", "tech-facts"];
+const PACKS = ["default", "dev-humor", "tech-facts", "motivation", "stoic", "science", "space", "wholesome", "productivity", "puns", "ko", "ja", "zh", "es", "fr", "de", "pt", "moon", "weekday", "year", "countdown"]; // keep in sync with worker/src/packs/index.js
 let item;
 let timer;
 

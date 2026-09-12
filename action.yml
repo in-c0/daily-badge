@@ -1,0 +1,69 @@
+name: "Daily Badge — message in your README"
+description: "Write today's message (fun day, dev humour, Stoic line, moon phase, countdown…) into your profile README as real text. No image proxy, no fork."
+author: in-c0
+branding:
+  icon: sun
+  color: purple
+
+inputs:
+  file:
+    description: "Markdown file containing the <!-- daily-badge:start --> … <!-- daily-badge:end --> block"
+    default: README.md
+  pack:
+    description: "Pack name (default, dev-humor, tech-facts, motivation, stoic, science, space, wholesome, productivity, puns, ko, ja, es, fr, de, pt, zh, moon, weekday, year, countdown), a comma list, or gh:owner/repo/file.json"
+    default: default
+  tz:
+    description: "IANA timezone the day flips in"
+    default: UTC
+  template:
+    description: "Markdown template. Placeholders: {message} {date} {iso} {weekday} {pack} {tz}"
+    default: "> 🌟 **{message}**\n> <sub>{date} · daily-badge</sub>"
+  seed:
+    description: "Any string; spreads rotating packs so profiles don't all show the same line"
+    default: ""
+  to:
+    description: "countdown pack only: MM-DD (annual) or YYYY-MM-DD"
+    default: ""
+  event:
+    description: "countdown pack only: event name"
+    default: ""
+  commit:
+    description: "Commit and push the change (true/false)"
+    default: "true"
+  commit-message:
+    description: "Commit message"
+    default: "chore: daily badge message"
+
+outputs:
+  message:
+    description: "Today's message"
+    value: ${{ steps.render.outputs.message }}
+  changed:
+    description: "Whether the file changed"
+    value: ${{ steps.render.outputs.changed }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: 22
+    - id: render
+      shell: bash
+      env:
+        INPUT_FILE: ${{ inputs.file }}
+        INPUT_PACK: ${{ inputs.pack }}
+        INPUT_TZ: ${{ inputs.tz }}
+        INPUT_TEMPLATE: ${{ inputs.template }}
+        INPUT_SEED: ${{ inputs.seed }}
+        INPUT_TO: ${{ inputs.to }}
+        INPUT_EVENT: ${{ inputs.event }}
+      run: node "${{ github.action_path }}/action/update-readme.mjs"
+    - if: inputs.commit == 'true' && steps.render.outputs.changed == 'true'
+      shell: bash
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add "${{ inputs.file }}"
+        git commit -m "${{ inputs['commit-message'] }}"
+        git push

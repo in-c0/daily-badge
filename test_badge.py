@@ -1,3 +1,4 @@
+import csv
 import datetime as dt
 
 import generate_badge as gb
@@ -5,8 +6,7 @@ import generate_badge as gb
 
 def test_every_day_of_leap_year_has_a_message():
     """Every calendar day (incl. Feb 29) must map to a message in the CSV."""
-    df = gb.load_messages()
-    present = set(df["Day"])
+    present = gb.load_messages()
 
     missing = []
     year = 2024  # leap year → exercises Feb 29 too
@@ -21,14 +21,15 @@ def test_every_day_of_leap_year_has_a_message():
 
 
 def test_no_duplicate_days():
-    df = gb.load_messages()
-    dupes = df[df["Day"].duplicated()]["Day"].tolist()
+    with open(gb.CSV_PATH, newline="", encoding="utf-8") as f:
+        days = [row["Day"] for row in csv.DictReader(f)]
+    dupes = sorted({d for d in days if days.count(d) > 1})
     assert not dupes, f"Duplicate day entries: {dupes}"
 
 
 def test_get_message_falls_back_when_missing():
-    df = gb.load_messages()
-    assert gb.get_message(df, "Smarch", 42) == gb.FALLBACK_MESSAGE
+    messages = gb.load_messages()
+    assert gb.get_message(messages, "Smarch", 42) == gb.FALLBACK_MESSAGE
 
 
 def test_build_badge_schema():
@@ -36,3 +37,22 @@ def test_build_badge_schema():
     assert badge["schemaVersion"] == 1
     assert badge["message"] == "hello"
     assert set(badge) == {"schemaVersion", "label", "message", "color"}
+
+
+def test_timezone_fallback(tmp_path):
+    bad = tmp_path / "timezone.txt"
+    bad.write_text("Mars/Olympus_Mons", encoding="utf-8")
+    assert str(gb.load_timezone(bad)) == "UTC"
+    good = tmp_path / "tz2.txt"
+    good.write_text("Australia/Sydney\n", encoding="utf-8")
+    assert str(gb.load_timezone(good)) == "Australia/Sydney"
+
+
+def test_csv_and_worker_default_pack_agree():
+    """The Worker's default pack is generated from the CSV; keep them in sync."""
+    import json, re, pathlib
+    js = pathlib.Path("worker/src/packs/default.js").read_text(encoding="utf-8")
+    body = js[js.index("messages: {") + len("messages: ") : js.rindex("}") ]
+    body = body[: body.rindex("}") + 1]
+    pack = json.loads(body)
+    assert pack == gb.load_messages()
